@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:export-ydpi="101.6"
+   inkscape:export-xdpi="101.6"
+   inkscape:export-filename="/home/steav/projects/personal/yt-shwdow/yt-shadow/icons/yt-96.png"
+   width="24mm"
+   height="24mm"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0rc1 (09960d6f05, 2020-04-09)"
+   sodipodi:docname="yt-shadow-inkscape.svg">
+  <defs
+     id="defs2">
+    <rect
+       id="rect13"
+       height="7.6005842"
+       width="9.1757383"
+       y="6.7991757"
+       x="-6.177655" />
+    <rect
+       x="3.1581653"
+       y="6.1691236"
+       width="17.02642"
+       height="13.763789"
+       id="rect12" />
+  </defs>
+  <sodipodi:namedview
+     inkscape:snap-page="false"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox="true"
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.959798"
+     inkscape:cx="27.808075"
+     inkscape:cy="62.304383"
+     inkscape:document-units="mm"
+     inkscape:current-layer="text10"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="2015"
+     inkscape:window-height="1269"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="レイヤー 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       aria-label="YT"
+       transform="matrix(1.6775724,0,0,1.5971286,-4.0878832,-8.7053414)"
+       id="text10"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect12);fill:#ff8080;fill-opacity:1;stroke:none">
+      <text
+         transform="matrix(1.6697147,0,0,1.6242084,13.492396,-3.5473191)"
+         style="font-style:normal;font-weight:normal;font-size:6.46565px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect13);fill:#ff5555;fill-opacity:1;stroke:none;"
+         id="text11"
+         xml:space="preserve"><tspan
+           sodipodi:role="line"
+           x="-6.1777344"
+           y="12.519413"><tspan>YS</tspan></tspan></text>
+    </g>
+  </g>
+</svg>
