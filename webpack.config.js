@@ -7,6 +7,7 @@ const webpackConfig = {
   mode: NODE_ENV,
   entry: {
     "yt-shadow": "./src/yt-shadow.ts",
+    "popup/popup": "./src/popup.ts"
   },
   output: {
     path: path.resolve(__dirname, "addon"),
@@ -16,6 +17,7 @@ const webpackConfig = {
 };
 
 if (NODE_ENV === "development") {
+  webpackConfig.devtool = 'inline-source-map';
   webpackConfig.plugins = [
     ...webpackConfig.plugins,
     new WebpackWebExt({
