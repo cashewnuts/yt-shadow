@@ -1,1 +1,5 @@
 node_modules
+
+// building files
+addon/yt-shadow.js
+web-ext-artifacts/
