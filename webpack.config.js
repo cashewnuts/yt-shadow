@@ -7,17 +7,27 @@ const webpackConfig = {
   mode: NODE_ENV,
   entry: {
     "yt-shadow": "./src/yt-shadow.ts",
-    "popup/popup": "./src/popup.ts"
+    "popup/popup": "./src/popup.ts",
   },
   output: {
     path: path.resolve(__dirname, "addon"),
     filename: "[name].js",
   },
+  resolve: {
+    // Add `.ts` and `.tsx` as a resolvable extension.
+    extensions: [".ts", ".tsx", ".js"],
+  },
+  module: {
+    rules: [
+      // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
+      { test: /\.tsx?$/, loader: "ts-loader" },
+    ],
+  },
   plugins: [],
 };
 
 if (NODE_ENV === "development") {
-  webpackConfig.devtool = 'inline-source-map';
+  webpackConfig.devtool = "inline-source-map";
   webpackConfig.plugins = [
     ...webpackConfig.plugins,
     new WebpackWebExt({
@@ -31,7 +41,7 @@ if (NODE_ENV === "development") {
         "run",
         "-s",
         "addon/",
-        "--reload",
+        "--no-reload",
         "-u",
         "https://www.youtube.com/watch?v=UfWh3OHYbEM",
       ],

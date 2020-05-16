@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "jsx": "react",
     "strict": true,
+    "esModuleInterop": true,
     "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
