@@ -19,6 +19,10 @@ const webpackConfig = {
   },
   module: {
     rules: [
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
       { test: /\.tsx?$/, loader: "ts-loader" },
     ],
@@ -41,7 +45,7 @@ if (NODE_ENV === "development") {
         "run",
         "-s",
         "addon/",
-        "--no-reload",
+        "--reload",
         "-u",
         "https://www.youtube.com/watch?v=UfWh3OHYbEM",
       ],
