@@ -1,0 +1,47 @@
+import { checkBePunctuated } from "../helpers/text-helper";
+
+export interface SRTWord {
+  word: string;
+  masked: string;
+}
+
+export interface SRTText {
+  start: number;
+  dur: number;
+  text: string;
+  words: SRTWord[];
+  done: boolean;
+}
+
+export default class SRT {
+  xml: unknown;
+  texts: SRTText[];
+  constructor(xmlObj: any) {
+    this.xml = xmlObj;
+    this.texts = [];
+    this.parse_();
+  }
+
+  private parse_() {
+    const textArr: any[] = (this.xml as any).transcript.text;
+    this.texts = textArr.map((t) => {
+      const { start, dur } = t.$ as { start: number; dur: number };
+      const text = t._;
+      const words = text.split(/\s|\rn/).map((word: string) => {
+        return {
+          word,
+          masked: "",
+        };
+      });
+      const done = checkBePunctuated(text);
+      return {
+        start,
+        dur,
+        text,
+        words,
+        done,
+      };
+    });
+    console.log(this.texts);
+  }
+}
