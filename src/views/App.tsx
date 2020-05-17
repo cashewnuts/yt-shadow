@@ -1,6 +1,7 @@
-import React, { PropsWithChildren, CSSProperties } from "react";
+import React, { PropsWithChildren, CSSProperties, useState } from "react";
 import SubtitleLoader from "./components/SubtitleLoader";
 import Spinner from "./components/Spinner";
+import YoutubeVideo from "./components/YoutubeVideo";
 import SRT from "../models/srt";
 
 const styles: { [key: string]: CSSProperties } = {
@@ -23,6 +24,7 @@ const styles: { [key: string]: CSSProperties } = {
 };
 
 const App = (props: PropsWithChildren<unknown>) => {
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement>();
   const handleSubtitleLoaded = (srt: SRT) => {
     // TODO
     console.log(srt);
@@ -33,6 +35,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   };
   return (
     <div style={styles.wrapper}>
+      <YoutubeVideo
+        onLoaded={({ video }) => setVideoElement(video)}
+        onPause={() => console.log("onPause")}
+        onTimeUpdate={() => console.log("onTimeUpdate")}
+      />
       <SubtitleLoader
         onLoaded={handleSubtitleLoaded}
         onError={handleError}
