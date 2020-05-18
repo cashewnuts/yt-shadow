@@ -3,6 +3,7 @@ import React, {
   useEffect,
   DOMAttributes,
   useState,
+  useRef,
 } from "react";
 import { getElementAsync } from "../../helpers/dependency-helper";
 
@@ -15,19 +16,20 @@ const YoutubeVideo = (
   props: PropsWithChildren<DOMAttributes<HTMLVideoElement> & YoutubeVideoProps>
 ) => {
   const [video, setVideo] = useState<HTMLVideoElement>();
+  const youtubeRef = useRef<HTMLVideoElement | null>(null);
   useEffect(() => {
     const asyncFn = async () => {
-      const ytVideo: HTMLVideoElement = await getElementAsync({
+      youtubeRef.current = await getElementAsync<HTMLVideoElement>({
         query: "video[src*='blob:https://www.youtube.com']",
       });
-      console.log("video tag", ytVideo, props);
+      console.log("video tag", youtubeRef.current, props);
       if (props.onLoaded) {
-        props.onLoaded({ video: ytVideo });
+        props.onLoaded({ video: youtubeRef.current });
       }
-      setVideo(ytVideo);
+      setVideo(youtubeRef.current);
       Object.keys(props).forEach((p) => {
         if (p.startsWith("on")) {
-          ytVideo.addEventListener(
+          youtubeRef.current?.addEventListener(
             p.substr(2).toLowerCase(),
             (props as any)[p]
           );
@@ -35,7 +37,7 @@ const YoutubeVideo = (
       });
     };
     asyncFn();
-  });
+  }, []);
   return <>{props.render && video && props.render(video)}</>;
 };
 

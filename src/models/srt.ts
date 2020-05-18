@@ -24,24 +24,29 @@ export default class SRT {
 
   private parse_() {
     const textArr: any[] = (this.xml as any).transcript.text;
-    this.texts = textArr.map((t) => {
-      const { start, dur } = t.$ as { start: number; dur: number };
-      const text = t._;
-      const words = text.split(/\s|\rn/).map((word: string) => {
+    this.texts = textArr
+      .map((t) => {
+        const { start, dur } = t.$ as { start: number; dur: number };
+        const text = t._;
+        if (!text) {
+          return undefined;
+        }
+        const words = text.split(/\s|\rn/).map((word: string) => {
+          return {
+            word,
+            masked: "",
+          };
+        });
+        const done = checkBePunctuated(text);
         return {
-          word,
-          masked: "",
+          start,
+          dur,
+          text,
+          words,
+          done,
         };
-      });
-      const done = checkBePunctuated(text);
-      return {
-        start,
-        dur,
-        text,
-        words,
-        done,
-      };
-    });
+      })
+      .filter((x): x is SRTText => Boolean(x));
     console.log(this.texts);
   }
 }
