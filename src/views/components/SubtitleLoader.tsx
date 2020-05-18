@@ -3,9 +3,10 @@ import { parseStringPromise } from "xml2js";
 import SRT from "../../models/srt";
 
 export interface SubtitleLoaderProps {
-  onLoaded: (response: SRT) => any;
+  videoId?: string;
+  onSRTLoaded: (response: SRT) => any;
   onError?: (err: Error) => any;
-  render: (loading: boolean) => any;
+  render: (renderArg: { loading: boolean; subtitleNotExists: boolean }) => any;
 }
 
 const getTimedTextUrl = (lang: string = "en", v: string) => {
@@ -14,24 +15,30 @@ const getTimedTextUrl = (lang: string = "en", v: string) => {
 
 const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true);
+  const [subtitleNotExists, setSubtitleNotExists] = useState(false);
+  const { videoId } = props;
 
   useEffect(() => {
     const asyncFn = async () => {
+      if (!videoId) {
+        return;
+      }
+      setSubtitleNotExists(false);
+      setLoading(true);
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const v = urlParams.get("v");
-        if (!v) {
-          throw new Error("Query string(v) does not exists");
-        }
-        const url = getTimedTextUrl("en", v);
-        console.log(url);
+        const url = getTimedTextUrl("en", videoId);
+        console.log("transcript url", url);
         const response = await fetch(url);
         const text = await response.text();
         const xml = await parseStringPromise(text);
-        console.log(xml);
         setLoading(false);
+        if (!xml) {
+          setSubtitleNotExists(true);
+          return;
+        }
+        console.log("xml", xml);
         const srt = new SRT(xml);
-        props.onLoaded(srt);
+        props.onSRTLoaded(srt);
       } catch (err) {
         if (props.onError) {
           props.onError(err);
@@ -39,9 +46,9 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
       }
     };
     asyncFn();
-  }, []);
+  }, [videoId]);
 
-  return <>{props.render(loading)}</>;
+  return <>{props.render({ loading, subtitleNotExists })}</>;
 };
 
 export default SubtitleLoader;
