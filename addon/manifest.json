@@ -11,7 +11,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
-      "js": ["yt-shadow.js"]
+      "js": ["browser-polyfill.min.js", "yt-shadow.js"]
     }
   ],
   "browser_action": {
@@ -24,8 +24,5 @@
     "default_title": "Yt Shadow",
     "default_popup": "popup/popup.html"
   },
-  "permissions": [
-    "*://video.google.com/*",
-    "storage"
-  ]
+  "permissions": ["*://video.google.com/*", "storage"]
 }
