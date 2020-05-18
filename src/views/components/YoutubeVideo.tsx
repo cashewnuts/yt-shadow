@@ -1,13 +1,20 @@
-import React, { PropsWithChildren, useEffect, DOMAttributes } from "react";
+import React, {
+  PropsWithChildren,
+  useEffect,
+  DOMAttributes,
+  useState,
+} from "react";
 import { getElementAsync } from "../../helpers/dependency-helper";
 
 export interface YoutubeVideoProps {
   onLoaded?: (args: { video: HTMLVideoElement }) => void;
+  render: (video: HTMLVideoElement) => any;
 }
 
 const YoutubeVideo = (
   props: PropsWithChildren<DOMAttributes<HTMLVideoElement> & YoutubeVideoProps>
 ) => {
+  const [video, setVideo] = useState<HTMLVideoElement>();
   useEffect(() => {
     const asyncFn = async () => {
       const ytVideo: HTMLVideoElement = await getElementAsync({
@@ -17,6 +24,7 @@ const YoutubeVideo = (
       if (props.onLoaded) {
         props.onLoaded({ video: ytVideo });
       }
+      setVideo(ytVideo);
       Object.keys(props).forEach((p) => {
         if (p.startsWith("on")) {
           ytVideo.addEventListener(
@@ -28,7 +36,7 @@ const YoutubeVideo = (
     };
     asyncFn();
   });
-  return <></>;
+  return <>{props.render && video && props.render(video)}</>;
 };
 
 export default YoutubeVideo;
