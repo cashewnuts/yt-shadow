@@ -1,5 +1,6 @@
 const path = require("path");
 const WebpackWebExt = require("webpack-webext-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 const { NODE_ENV = "development" } = process.env;
 
@@ -27,11 +28,30 @@ const webpackConfig = {
       { test: /\.tsx?$/, loader: "ts-loader" },
     ],
   },
-  plugins: [],
+  performance: {
+    hints: "error",
+    maxEntrypointSize: 1000000,
+    maxAssetSize: 1000000,
+  },
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from:
+            "node_modules/webextension-polyfill/dist/browser-polyfill.min.js",
+        },
+      ],
+    }),
+  ],
 };
 
 if (NODE_ENV === "development") {
   webpackConfig.devtool = "inline-source-map";
+  webpackConfig.performance = {
+    hints: "warning",
+    maxEntrypointSize: 5000000,
+    maxAssetSize: 5000000,
+  };
   webpackConfig.plugins = [
     ...webpackConfig.plugins,
     new WebpackWebExt({
