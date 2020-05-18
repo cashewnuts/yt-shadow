@@ -39,6 +39,8 @@ const App = (props: PropsWithChildren<unknown>) => {
         onLoaded={({ video }) => setVideoElement(video)}
         onPause={() => console.log("onPause")}
         onTimeUpdate={() => console.log("onTimeUpdate")}
+        onLoadStart={() => console.log("onLoadStart")}
+        render={(video) => <h1>video loaded {video.className}</h1>}
       />
       <SubtitleLoader
         onLoaded={handleSubtitleLoaded}
