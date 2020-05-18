@@ -8,6 +8,7 @@ import SubtitleLoader from "./components/SubtitleLoader";
 import Spinner from "./components/Spinner";
 import YoutubeVideo from "./components/YoutubeVideo";
 import SRT from "../models/srt";
+import VideoPlayer from "./components/VideoPlayer";
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -67,7 +68,7 @@ const App = (props: PropsWithChildren<unknown>) => {
         onPause={() => console.log("onPause")}
         onTimeUpdate={handleTimeUpdate}
         onLoadStart={handleLoadStart}
-        render={(video) => <h1>video loaded {video.className}</h1>}
+        render={(video) => <VideoPlayer video={video} />}
       />
       <SubtitleLoader
         videoId={videoId}
