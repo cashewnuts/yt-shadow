@@ -11,6 +11,9 @@ export interface VideoPlayerProps {
   video: HTMLVideoElement;
   start?: number;
   end?: number;
+  onRangeOver?: (time: number) => any;
+  onNext?: () => any;
+  onPrevious?: () => any;
 }
 
 const styles: { [key: string]: CSSProperties } = {
@@ -37,7 +40,7 @@ const styles: { [key: string]: CSSProperties } = {
 };
 
 const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
-  const { video, start, end } = props;
+  const { video, start, end, onRangeOver } = props;
   const [currentTime, setCurrentTime] = useState(0);
   const [min, setMin] = useState(0);
   const [max, setMax] = useState(video.duration);
@@ -49,6 +52,12 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   };
   useEffect(() => {
     video.addEventListener("timeupdate", () => {
+      console.log(max, video.duration, video.currentTime);
+      if ((end || video.duration) < video.currentTime) {
+        if (onRangeOver) {
+          onRangeOver(video.currentTime);
+        }
+      }
       updateCurrentTime();
     });
     video.addEventListener("playing", () => {
@@ -67,6 +76,18 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
     if (end) {
       setMax(end);
     }
+    const onRangeOverChecker = () => {
+      console.log(max, video.duration, video.currentTime);
+      if ((end || video.duration) < video.currentTime) {
+        if (onRangeOver) {
+          onRangeOver(video.currentTime);
+        }
+      }
+    };
+    video.addEventListener("timeupdate", onRangeOverChecker);
+    return () => {
+      video.removeEventListener("timeupdate", onRangeOverChecker);
+    };
   }, [start, end]);
 
   const playHandler = () => {
@@ -84,7 +105,7 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   return (
     <div style={styles.wrapper}>
       <button onClick={playHandler}>{isPlaying ? "stop" : "play"}</button>
-      <button>previous</button>
+      <button onClick={props.onPrevious}>previous</button>
       <div style={styles.sliderContainer} ref={sliderContainerRef}>
         <input
           type="range"
@@ -96,7 +117,7 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
           style={styles.slider}
         ></input>
       </div>
-      <button>next</button>
+      <button onClick={props.onNext}>next</button>
     </div>
   );
 };
