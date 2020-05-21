@@ -3,6 +3,8 @@ import React, {
   useEffect,
   CSSProperties,
   useState,
+  useRef,
+  ChangeEvent,
 } from "react";
 
 export interface VideoPlayerProps {
@@ -15,51 +17,86 @@ const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     width: "100%",
     height: "2em",
+    display: "flex",
   },
   sliderContainer: {
     position: "relative",
     width: "60%",
     height: "100%",
+    background: "#fbfbfb",
+    borderRadius: 2,
   },
   slider: {
-    position: "absolute",
-    top: 0,
-    left: "30%",
-    width: "5px",
+    width: "100%",
     height: "100%",
-    backgroundColor: "black",
+    backgroundColor: "#afafaf",
+    boxShadow: "rgba(0, 0, 0, 0.75) 1px 1px 1px 0px",
     transform: "translate(-2.5px)",
+    cursor: "pointer",
   },
 };
 
 const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   const { video, start, end } = props;
-  const [timeParcent, setTimePercent] = useState(0);
-  const updateTImeParcent = () => {
+  const [currentTime, setCurrentTime] = useState(0);
+  const [min, setMin] = useState(0);
+  const [max, setMax] = useState(video.duration);
+  const [isPlaying, setIsPlaying] = useState(!video.paused);
+  const sliderContainerRef = useRef<HTMLDivElement | null>(null);
+  const updateCurrentTime = () => {
     const currentTime = video.currentTime;
-    const startTime = start || 0;
-    const endTime = end || video.duration;
-    console.log(currentTime, start, startTime, end, endTime);
-    const ratio = (currentTime - startTime) / endTime;
-    console.log(ratio, ratio * 100);
-    setTimePercent(ratio * 100);
+    setCurrentTime(currentTime);
   };
   useEffect(() => {
     video.addEventListener("timeupdate", () => {
-      updateTImeParcent();
+      updateCurrentTime();
     });
-    const test = {
-      ...styles,
-    };
+    video.addEventListener("playing", () => {
+      setIsPlaying(true);
+    });
+    video.addEventListener("pause", () => {
+      setIsPlaying(false);
+    });
   }, [video]);
   useEffect(() => {
-    updateTImeParcent();
+    console.log("start end", start, end, min, max);
+    updateCurrentTime();
+    if (start) {
+      setMin(start);
+    }
+    if (end) {
+      setMax(end);
+    }
   }, [start, end]);
+
+  const playHandler = () => {
+    if (isPlaying) {
+      video.pause();
+    } else {
+      video.play();
+    }
+  };
+  const rangeChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    const newCurrent = +event.target.value;
+    setCurrentTime(newCurrent);
+    video.currentTime = newCurrent;
+  };
   return (
     <div style={styles.wrapper}>
-      <div style={styles.sliderContainer}>
-        <div style={{ ...styles.slider, ...{ left: `${timeParcent}%` } }}></div>
+      <button onClick={playHandler}>{isPlaying ? "stop" : "play"}</button>
+      <button>previous</button>
+      <div style={styles.sliderContainer} ref={sliderContainerRef}>
+        <input
+          type="range"
+          min={min}
+          max={max}
+          value={currentTime}
+          step="0.001"
+          onChange={rangeChangeHandler}
+          style={styles.slider}
+        ></input>
       </div>
+      <button>next</button>
     </div>
   );
 };
