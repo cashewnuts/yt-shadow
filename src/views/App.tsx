@@ -8,8 +8,9 @@ import React, {
 import SubtitleLoader from "./components/SubtitleLoader";
 import Spinner from "./components/Spinner";
 import YoutubeVideo from "./components/YoutubeVideo";
-import SRT from "../models/srt";
+import SRT, { SRTText } from "../models/srt";
 import VideoPlayer from "./components/VideoPlayer";
+import TranscriptWriter from "./components/TranscriptWriter";
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -39,7 +40,15 @@ const App = (props: PropsWithChildren<unknown>) => {
     start: number;
     end: number;
   }>();
+  const [transcript, setTranscript] = useState<SRTText>();
 
+  const updateTranscript = (text: SRTText) => {
+    setScriptRange({
+      start: text.start,
+      end: text.start + text.dur,
+    });
+    setTranscript(text);
+  };
   const updateVideoId = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const v = urlParams.get("v");
@@ -66,20 +75,33 @@ const App = (props: PropsWithChildren<unknown>) => {
     updateVideoId();
   };
   const handleTimeUpdate = () => {
-    console.log("onTimeUpdate", videoRef, srtRef);
     if (!videoRef.current || !srtRef.current) return;
     const { currentTime } = videoRef.current;
     const { texts } = srtRef.current;
     const matchedText = texts.find(
       (t) => t.start <= currentTime && currentTime <= t.start + t.dur
     );
-    console.log("matchedText", matchedText);
     if (matchedText) {
-      setScriptRange({
-        start: matchedText.start,
-        end: matchedText.start + matchedText.dur,
-      });
+      updateTranscript(matchedText);
     }
+  };
+  const handleRangeOver = (time: number) => {
+    console.log("handleRangeOver");
+    // videoRef.current?.pause();
+  };
+  const handleNextPrevTranscript = (cremnt: 1 | -1) => {
+    return () => {
+      if (!srtRef.current) return;
+      const srt = srtRef.current;
+      const idx = transcript ? srt.texts.indexOf(transcript) : 0;
+      const matchedText = srt.texts[idx + cremnt];
+      if (matchedText) {
+        updateTranscript(matchedText);
+        if (videoRef.current) {
+          videoRef.current.currentTime = matchedText.start;
+        }
+      }
+    };
   };
   return (
     <div style={styles.wrapper}>
@@ -93,6 +115,9 @@ const App = (props: PropsWithChildren<unknown>) => {
             video={video}
             start={scriptRange?.start}
             end={scriptRange?.end}
+            onRangeOver={handleRangeOver}
+            onNext={handleNextPrevTranscript(1)}
+            onPrevious={handleNextPrevTranscript(-1)}
           />
         )}
       />
@@ -112,10 +137,10 @@ const App = (props: PropsWithChildren<unknown>) => {
                 <h1>Subtitle Not Exists</h1>
               </div>
             )}
-            {!loading && !subtitleNotExists && <h1>hello</h1>}
           </>
         )}
       />
+      {transcript && <TranscriptWriter text={transcript} />}
     </div>
   );
 };
