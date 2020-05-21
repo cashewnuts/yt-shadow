@@ -3,6 +3,7 @@ import React, {
   CSSProperties,
   useState,
   useEffect,
+  useRef,
 } from "react";
 import SubtitleLoader from "./components/SubtitleLoader";
 import Spinner from "./components/Spinner";
@@ -31,9 +32,13 @@ const styles: { [key: string]: CSSProperties } = {
 
 const App = (props: PropsWithChildren<unknown>) => {
   const [videoId, setVideoId] = useState<string>();
-  const [srt, setSRT] = useState<SRT>();
-  const [videoElement, setVideoElement] = useState<HTMLVideoElement>();
+  const srtRef = useRef<SRT>();
+  const videoRef = useRef<HTMLVideoElement>();
   const [isAds, setIsAds] = useState(false);
+  const [scriptRange, setScriptRange] = useState<{
+    start: number;
+    end: number;
+  }>();
 
   const updateVideoId = () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -45,30 +50,51 @@ const App = (props: PropsWithChildren<unknown>) => {
     updateVideoId();
   }, []);
   const handleSubtitleLoaded = (srt: SRT) => {
-    console.log("onSRTLoaded", srt, videoElement);
-    setSRT(srt);
-    if (videoElement) {
-      setIsAds(videoElement.duration < srt.texts[srt.texts.length - 1].start);
+    console.log("onSRTLoaded", srt, videoRef);
+    srtRef.current = srt;
+    if (videoRef.current) {
+      setIsAds(
+        videoRef.current.duration < srt.texts[srt.texts.length - 1].start
+      );
     }
   };
   const handleError = (err: Error) => {
     console.error(err);
   };
   const handleLoadStart = () => {
-    console.log("onLoadStart", srt, videoElement);
+    console.log("onLoadStart", srtRef.current, videoRef);
     updateVideoId();
   };
   const handleTimeUpdate = () => {
-    // console.log("onTimeUpdate");
+    console.log("onTimeUpdate", videoRef, srtRef);
+    if (!videoRef.current || !srtRef.current) return;
+    const { currentTime } = videoRef.current;
+    const { texts } = srtRef.current;
+    const matchedText = texts.find(
+      (t) => t.start <= currentTime && currentTime <= t.start + t.dur
+    );
+    console.log("matchedText", matchedText);
+    if (matchedText) {
+      setScriptRange({
+        start: matchedText.start,
+        end: matchedText.start + matchedText.dur,
+      });
+    }
   };
   return (
     <div style={styles.wrapper}>
       <YoutubeVideo
-        onLoaded={({ video }) => setVideoElement(video)}
+        onLoaded={({ video }) => (videoRef.current = video)}
         onPause={() => console.log("onPause")}
         onTimeUpdate={handleTimeUpdate}
         onLoadStart={handleLoadStart}
-        render={(video) => <VideoPlayer video={video} />}
+        render={(video) => (
+          <VideoPlayer
+            video={video}
+            start={scriptRange?.start}
+            end={scriptRange?.end}
+          />
+        )}
       />
       <SubtitleLoader
         videoId={videoId}

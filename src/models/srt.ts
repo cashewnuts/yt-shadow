@@ -26,7 +26,8 @@ export default class SRT {
     const textArr: any[] = (this.xml as any).transcript.text;
     this.texts = textArr
       .map((t) => {
-        const { start, dur } = t.$ as { start: number; dur: number };
+        const start = parseInt(t.$.start, 10);
+        const dur = parseInt(t.$.dur, 10);
         const text = t._;
         if (!text) {
           return undefined;
