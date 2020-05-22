@@ -1,5 +1,5 @@
 import SRT from '../srt'
-import { xmlObj } from './xml-obj'
+import { xmlObj } from './xml-obj.data'
 
 describe('srt.ts', () => {
   it('can parse', () => {
@@ -9,5 +9,13 @@ describe('srt.ts', () => {
     } catch (err) {
       fail(err)
     }
+  })
+  it('can parse text', () => {
+    const srt = new SRT(xmlObj)
+    expect(srt.texts).toHaveLength(24)
+  })
+  it('can parse text', () => {
+    const srt = new SRT(xmlObj)
+    expect(srt.paragraphs).toHaveLength(12)
   })
 })

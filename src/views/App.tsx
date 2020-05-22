@@ -8,7 +8,7 @@ import React, {
 import SubtitleLoader from './components/SubtitleLoader'
 import Spinner from './components/Spinner'
 import YoutubeVideo from './components/YoutubeVideo'
-import SRT, { SRTText } from '../models/srt'
+import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter from './components/TranscriptWriter'
 
@@ -40,9 +40,9 @@ const App = (props: PropsWithChildren<unknown>) => {
     start: number
     end: number
   }>()
-  const [transcript, setTranscript] = useState<SRTText>()
+  const [transcript, setTranscript] = useState<SRTMeasure>()
 
-  const updateTranscript = (text: SRTText) => {
+  const updateTranscript = (text: SRTMeasure) => {
     setScriptRange({
       start: text.start,
       end: text.start + text.dur,
@@ -77,12 +77,12 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleTimeUpdate = () => {
     if (!videoRef.current || !srtRef.current) return
     const { currentTime } = videoRef.current
-    const { texts } = srtRef.current
-    const matchedText = texts.find(
+    const { paragraphs } = srtRef.current
+    const matchedParagraph = paragraphs.find(
       (t) => t.start <= currentTime && currentTime <= t.start + t.dur
     )
-    if (matchedText) {
-      updateTranscript(matchedText)
+    if (matchedParagraph) {
+      updateTranscript(matchedParagraph)
     }
   }
   const handleRangeOver = (time: number) => {
@@ -93,12 +93,12 @@ const App = (props: PropsWithChildren<unknown>) => {
     return () => {
       if (!srtRef.current) return
       const srt = srtRef.current
-      const idx = transcript ? srt.texts.indexOf(transcript) : 0
-      const matchedText = srt.texts[idx + cremnt]
-      if (matchedText) {
-        updateTranscript(matchedText)
+      const idx = transcript ? srt.paragraphs.indexOf(transcript) : 0
+      const matchedParagraph = srt.paragraphs[idx + cremnt]
+      if (matchedParagraph) {
+        updateTranscript(matchedParagraph)
         if (videoRef.current) {
-          videoRef.current.currentTime = matchedText.start
+          videoRef.current.currentTime = matchedParagraph.start
         }
       }
     }

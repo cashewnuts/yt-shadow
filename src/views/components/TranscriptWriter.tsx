@@ -1,8 +1,8 @@
 import React, { PropsWithChildren } from 'react'
-import { SRTText } from '../../models/srt'
+import { SRTMeasure } from '../../models/srt'
 
 export interface TranscriptWriterProps {
-  text: SRTText
+  text: SRTMeasure
 }
 
 const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
