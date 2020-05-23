@@ -52,7 +52,6 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   }
   useEffect(() => {
     video.addEventListener('timeupdate', () => {
-      console.log(max, video.duration, video.currentTime)
       if ((end || video.duration) < video.currentTime) {
         if (onRangeOver) {
           onRangeOver(video.currentTime)
@@ -68,7 +67,6 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
     })
   }, [video])
   useEffect(() => {
-    console.log('start end', start, end, min, max)
     updateCurrentTime()
     if (start) {
       setMin(start)

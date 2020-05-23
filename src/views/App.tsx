@@ -82,6 +82,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       (t) => t.start <= currentTime && currentTime <= t.start + t.dur
     )
     if (matchedParagraph) {
+      console.log(matchedParagraph)
       updateTranscript(matchedParagraph)
     }
   }
