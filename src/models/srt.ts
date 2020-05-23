@@ -1,4 +1,4 @@
-import { checkBePunctuated } from '../helpers/text-helper'
+import { checkBePunctuated, checkSpokenText } from '../helpers/text-helper'
 import { decode } from 'entities'
 
 export interface SRTWord {
@@ -17,6 +17,7 @@ export interface SRTMeasure {
 export interface SRTText extends SRTMeasure {
   raw: string
   done: boolean
+  spoken: boolean
 }
 export interface SRTParagraph extends SRTMeasure {
   srtTexts: SRTText[]
@@ -55,6 +56,7 @@ export default class SRT {
         })
         const text = decode(rawText)
         const done = checkBePunctuated(text)
+        const spoken = checkSpokenText(text)
         return {
           start,
           dur,
@@ -63,6 +65,7 @@ export default class SRT {
           raw: rawText,
           words,
           done,
+          spoken,
         }
       })
       .filter((x): x is SRTText => Boolean(x))
@@ -84,6 +87,9 @@ export default class SRT {
     }
     let tempTextList = []
     for (const text of this.texts) {
+      if (!text.spoken) {
+        continue
+      }
       tempTextList.push(text)
       if (text.done) {
         this.paragraphs = [...this.paragraphs, constructParagraph(tempTextList)]
