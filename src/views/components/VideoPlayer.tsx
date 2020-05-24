@@ -16,15 +16,19 @@ export interface VideoPlayerProps {
   onPrevious?: () => any
 }
 
-const styles: { [key: string]: CSSProperties } = {
+const styles: {
+  [key: string]: CSSProperties
+} = {
   wrapper: {
     width: '100%',
-    height: '2em',
-    display: 'flex',
+  },
+  detailWrapper: {
+    transition: 'max-height 300ms ease-in-out',
+    overflow: 'hidden',
   },
   sliderContainer: {
     position: 'relative',
-    width: '60%',
+    width: '100%',
     height: '100%',
     background: '#fbfbfb',
     borderRadius: 2,
@@ -36,6 +40,14 @@ const styles: { [key: string]: CSSProperties } = {
     boxShadow: 'rgba(0, 0, 0, 0.75) 1px 1px 1px 0px',
     transform: 'translate(-2.5px)',
     cursor: 'pointer',
+  },
+  playerWrapper: {
+    width: '100%',
+    display: 'flex',
+  },
+  button: {
+    height: '30px',
+    lineHeight: 1,
   },
 }
 
@@ -95,6 +107,10 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
       video.play()
     }
   }
+  const [rangeOpen, setRangeOpen] = useState(false)
+  const rangeToogleHandler = () => {
+    setRangeOpen(!rangeOpen)
+  }
   const rangeChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const newCurrent = +event.target.value
     setCurrentTime(newCurrent)
@@ -102,20 +118,35 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   }
   return (
     <div style={styles.wrapper}>
-      <button onClick={playHandler}>{isPlaying ? 'stop' : 'play'}</button>
-      <button onClick={props.onPrevious}>previous</button>
-      <div style={styles.sliderContainer} ref={sliderContainerRef}>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={currentTime}
-          step="0.001"
-          onChange={rangeChangeHandler}
-          style={styles.slider}
-        ></input>
+      <div style={styles.playerWrapper}>
+        <button style={styles.button} onClick={rangeToogleHandler}>
+          range
+        </button>
+        <button style={styles.button} onClick={playHandler}>
+          {isPlaying ? 'stop' : 'play'}
+        </button>
+        <button style={styles.button} onClick={props.onPrevious}>
+          previous
+        </button>
+        <button style={styles.button} onClick={props.onNext}>
+          next
+        </button>
       </div>
-      <button onClick={props.onNext}>next</button>
+      <div
+        style={{ ...styles.detailWrapper, maxHeight: rangeOpen ? '5em' : '0' }}
+      >
+        <div style={styles.sliderContainer} ref={sliderContainerRef}>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={currentTime}
+            step="0.001"
+            onChange={rangeChangeHandler}
+            style={styles.slider}
+          ></input>
+        </div>
+      </div>
     </div>
   )
 }
