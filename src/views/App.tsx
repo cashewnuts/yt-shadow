@@ -15,9 +15,9 @@ import TranscriptWriter from './components/TranscriptWriter'
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     position: 'relative',
-    width: '100%',
+    width: 'auto',
     minHeight: '6em',
-    padding: '0.5em 1em',
+    padding: '1em 0 1em 0',
   },
   spinner: {
     position: 'absolute',
@@ -77,8 +77,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleTimeUpdate = () => {
     if (!videoRef.current || !srtRef.current) return
     const { currentTime } = videoRef.current
-    const { paragraphs } = srtRef.current
-    const matchedParagraph = paragraphs.find(
+    const srt = srtRef.current
+    const PARAGRAPH_SELECTED = true
+    const propName = PARAGRAPH_SELECTED ? 'paragraphs' : 'texts'
+    const prop = srt[propName]
+    const matchedParagraph = (prop as Array<SRTMeasure>).find(
       (t) => t.start <= currentTime && currentTime <= t.start + t.dur
     )
     if (matchedParagraph) {
@@ -92,10 +95,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   }
   const handleNextPrevTranscript = (cremnt: 1 | -1) => {
     return () => {
-      if (!srtRef.current) return
+      if (!srtRef.current || !transcript) return
+      const propName = 'srtTexts' in transcript ? 'paragraphs' : 'texts'
       const srt = srtRef.current
-      const idx = transcript ? srt.paragraphs.indexOf(transcript) : 0
-      const matchedParagraph = srt.paragraphs[idx + cremnt]
+      const idx = transcript ? srt[propName].indexOf(transcript as any) : 0
+      const matchedParagraph = srt[propName][idx + cremnt]
       if (matchedParagraph) {
         updateTranscript(matchedParagraph)
         if (videoRef.current) {
