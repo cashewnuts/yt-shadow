@@ -138,8 +138,8 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
         <div style={styles.sliderContainer} ref={sliderContainerRef}>
           <input
             type="range"
-            min={min}
-            max={max}
+            min={min - 0.5}
+            max={max + 0.5}
             value={currentTime}
             step="0.001"
             onChange={rangeChangeHandler}
