@@ -2,7 +2,7 @@ const path = require('path')
 const WebpackWebExt = require('webpack-webext-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-const { NODE_ENV = 'development' } = process.env
+const { NODE_ENV = 'development', ENABLE_WEBEXT } = process.env
 
 const webpackConfig = {
   mode: NODE_ENV,
@@ -52,6 +52,9 @@ if (NODE_ENV === 'development') {
     maxEntrypointSize: 5000000,
     maxAssetSize: 5000000,
   }
+}
+
+if (ENABLE_WEBEXT === 'true') {
   webpackConfig.plugins = [
     ...webpackConfig.plugins,
     new WebpackWebExt({
