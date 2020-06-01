@@ -1,5 +1,6 @@
 const path = require('path')
 const WebpackWebExt = require('webpack-webext-plugin')
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const { NODE_ENV = 'development', ENABLE_WEBEXT } = process.env
@@ -15,6 +16,7 @@ const webpackConfig = {
     filename: '[name].js',
   },
   resolve: {
+    plugins: [new TsconfigPathsPlugin()],
     // Add `.ts` and `.tsx` as a resolvable extension.
     extensions: ['.ts', '.tsx', '.js'],
   },
