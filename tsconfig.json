@@ -10,8 +10,12 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"]
+    "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"],
+    "moduleResolution": "classic",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
