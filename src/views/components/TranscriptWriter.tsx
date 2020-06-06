@@ -83,6 +83,7 @@ class WordProcessor {
   key: string
   srtWord: SRTWord
   results: WordProcessorResult[]
+  length: number = 0
   constructor(word: SRTWord) {
     this.key = uuidv4()
     this.srtWord = word
@@ -101,7 +102,7 @@ class WordProcessor {
     )
   }
   get hasInput() {
-    return this.results.length > 0
+    return this.results.filter((r) => r.s).length > 0
   }
   get end() {
     return this.results.every((r) => Boolean(r.s || !r.spoken))
@@ -120,6 +121,7 @@ class WordProcessor {
 
   input(str: string) {
     let spaceCount = 0
+    this.length = 0
     const word = this.srtWord.word
     const results: WordProcessorResult[] = []
     let index = '0'
@@ -164,14 +166,15 @@ class WordProcessor {
       const spoken = checkSpokenChar(w)
       return {
         w,
-        s: !spoken ? w : undefined,
+        s: undefined,
         mask: WHITE_SPACE,
         correct: !spoken,
         spoken,
       }
     })
 
-    return str.substr(parseInt(index, 10) + 1)
+    this.length = parseInt(index, 10) + 1
+    return str.substr(this.length)
   }
 
   get render() {
@@ -213,22 +216,42 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
   }, [text])
 
-  const changeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target
-    let str = value
+  const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
       str = wordProcessor.input(str)
     }
     setWordProcessors(wordProcessors)
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
+  }
+  const changeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target
+    updateWordProcessorInput(value)
     setInputValue(value)
   }
   const wrapperFocusHandler = () => {
     inputRef.current?.focus()
   }
-  const keyPressInputHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-    const { key, ctrlKey } = event
+  const keyDownInputHandler = (event: KeyboardEvent<HTMLInputElement>) => {
+    const { key, ctrlKey, metaKey } = event
+    if (key === 'Backspace' && (ctrlKey || metaKey)) {
+      event.preventDefault()
+      if (!wordProcessors || wordProcessors.length === 0) {
+        return
+      }
+      let length = 0
+      let lastWp = wordProcessors[0]
+      for (const wp of wordProcessors) {
+        if (!wp.hasInput) {
+          break
+        }
+        lastWp = wp
+        length += wp.length
+      }
+      const newInputValue = inputValue.substr(0, length - lastWp.length)
+      updateWordProcessorInput(newInputValue)
+      setInputValue(newInputValue)
+    }
     if (inputEnded) {
       if (key === 'Enter' && ctrlKey) {
         setShowAnswer(!showAnswer)
@@ -259,7 +282,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
               ref={inputRef}
               css={styles.inputStyle}
               onChange={changeInputHandler}
-              onKeyPress={keyPressInputHandler}
+              onKeyDown={keyDownInputHandler}
               value={inputValue}
             />
             <button onClick={showAnswerClickHandler}>Show Answer</button>
