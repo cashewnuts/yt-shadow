@@ -1,6 +1,6 @@
+/** @jsx jsx */
 import React, {
   PropsWithChildren,
-  CSSProperties,
   ChangeEvent,
   useState,
   SyntheticEvent,
@@ -10,53 +10,59 @@ import React, {
 } from 'react'
 import { SRTMeasure, SRTWord } from '../../models/srt'
 import { v4 as uuidv4 } from 'uuid'
+import {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  jsx,
+  css,
+  InterpolationWithTheme,
+} from '@emotion/core'
 
 export interface TranscriptWriterProps {
   text: SRTMeasure
 }
 
-const styles: { [key: string]: CSSProperties } = {
-  inputContainer: {
+const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
+  inputContainer: css({
     height: '3em',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  inputStyle: {
+  }),
+  inputStyle: css({
     width: '60%',
-  },
-  word: {
+  }),
+  word: css({
     paddingLeft: '0.5em',
-  },
-  paragraph: {
+  }),
+  paragraph: css({
     fontSize: '16px',
     textAlign: 'center',
     wordWrap: 'break-word',
     fontFamily: "'Roboto', monospace",
     margin: '0.75em 0',
-  },
-  masked: {
+  }),
+  masked: css({
     borderBottom: '1px solid black',
     display: 'inline-block',
     width: '.75em',
     fontStyle: 'normal',
     marginLeft: '1px',
-  },
-  correct: {
+  }),
+  correct: css({
     text: 'blue',
     display: 'inline-block',
     width: '.75em',
     fontStyle: 'normal',
     marginLeft: '1px',
-  },
-  wrong: {
+  }),
+  wrong: css({
     text: 'red',
     background: 'yellow',
     display: 'inline-block',
     width: '.75em',
     fontStyle: 'italic',
     marginLeft: '1px',
-  },
+  }),
 }
 
 const WHITE_SPACE = '\u00A0'
@@ -172,8 +178,8 @@ class WordProcessor {
     return (
       <span>
         {this.results.map((rslt, index) => (
-          <i style={styles.masked} key={index}>
-            {rslt.spoken ? <>{rslt.s ? rslt.s : rslt.mask}</> : <>{rslt.w}</>}
+          <i css={styles.masked} key={index}>
+            {rslt.spoken ? (rslt.s ? rslt.s : rslt.mask) : rslt.w}
           </i>
         ))}
       </span>
@@ -184,7 +190,7 @@ class WordProcessor {
     return (
       <span>
         {this.results.map((rslt, index) => (
-          <i key={index} style={rslt.correct ? styles.correct : styles.wrong}>
+          <i key={index} css={rslt.correct ? styles.correct : styles.wrong}>
             {rslt.w}
           </i>
         ))}
@@ -238,20 +244,20 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       {text && (
         <div>
           <p
-            style={styles.paragraph}
+            css={styles.paragraph}
             onClick={(event) => event.stopPropagation()}
           >
             {(inputValue || showAnswer || true) &&
               wordProcessors.map((wp) => (
-                <span style={styles.word} key={wp.key}>
+                <span css={styles.word} key={wp.key}>
                   {showAnswer ? wp.renderAnswer : wp.render}
                 </span>
               ))}
           </p>
-          <div style={styles.inputContainer}>
+          <div css={styles.inputContainer}>
             <input
               ref={inputRef}
-              style={styles.inputStyle}
+              css={styles.inputStyle}
               onChange={changeInputHandler}
               onKeyPress={keyPressInputHandler}
               value={inputValue}
