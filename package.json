@@ -8,7 +8,7 @@
     "test:watch": "jest --watch",
     "start": "web-ext run -s yt-shadow",
     "dev": "ENABLE_WEBEXT=true webpack -w",
-    "dev:server": "webpack-dev-server --open --config webpack-dev-server.config.js",
+    "dev:server": "webpack-dev-server --config webpack-dev-server.config.js",
     "build": "npm run build:webpack && npm run build:web-ext",
     "build:webpack": "NODE_ENV=production webpack",
     "build:web-ext": "web-ext build -o -s addon"
