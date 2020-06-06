@@ -48,13 +48,13 @@ export default class SRT {
         if (!rawText) {
           return undefined
         }
-        const words = rawText.split(/\s|\rn/).map((word: string) => {
+        const text = decode(rawText)
+        const words = text.split(/\s|\rn/).map((word: string) => {
           return {
             word,
             masked: '',
           }
         })
-        const text = decode(rawText)
         const done = checkBePunctuated(text)
         const spoken = checkSpokenText(text)
         return {

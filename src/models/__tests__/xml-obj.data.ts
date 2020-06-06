@@ -167,3 +167,26 @@ export const xmlObjWithNonSpeaking = {
     ],
   },
 }
+
+export const objCode39 = {
+  transcript: {
+    text: [
+      {
+        _: 'For some of you, it&#39;s pretty easy.',
+        $: { start: '22.317', dur: '1.643' },
+      },
+    ],
+  },
+}
+
+export const objQuote = {
+  transcript: {
+    text: [
+      {
+        _:
+          'Inside your head, you&#39;re like, &quot;It&#39;s one.\nYou&#39;re speaking it, buddy. I&#39;m done.&quot;',
+        $: { start: '23.96', dur: '3.735' },
+      },
+    ],
+  },
+}

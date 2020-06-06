@@ -1,5 +1,11 @@
 import SRT from '../srt'
-import { xmlObj, xmlObjShort, xmlObjWithNonSpeaking } from './xml-obj.data'
+import {
+  xmlObj,
+  xmlObjShort,
+  xmlObjWithNonSpeaking,
+  objCode39,
+  objQuote,
+} from './xml-obj.data'
 
 describe('srt.ts', () => {
   it('can parse', () => {
@@ -22,5 +28,15 @@ describe('srt.ts', () => {
     const srt = new SRT(xmlObjWithNonSpeaking)
     expect(srt.texts).toHaveLength(8)
     expect(srt.paragraphs).toHaveLength(3)
+  })
+  it('can decode code 39', () => {
+    const srt = new SRT(objCode39)
+    expect(srt.texts[0].words[4].word).toBe("it's")
+  })
+  it('can decode quote', () => {
+    const srt = new SRT(objQuote)
+    const { texts } = srt
+    const [text] = texts
+    expect(text.words[text.words.length - 1].word).toBe('done."')
   })
 })
