@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
     "start": "web-ext run -s yt-shadow",
     "dev": "ENABLE_WEBEXT=true webpack -w",
     "dev:server": "webpack-dev-server --open --config webpack-dev-server.config.js",
