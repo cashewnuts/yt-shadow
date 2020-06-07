@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import SRT, { SRTMeasure } from '@/models/srt'
 import TranscriptWriter from '@/views/components/TranscriptWriter'
+import { AppContextProvider } from '@/contexts/AppContext'
 
 const xmlObj = {
   transcript: {
@@ -17,7 +18,7 @@ const xmlObj = {
   },
 }
 
-export default () => {
+const DevTranscriptWriter = () => {
   console.log(SRT)
   const [transcript, setTranscript] = useState<SRTMeasure>()
   useEffect(() => {
@@ -25,5 +26,11 @@ export default () => {
     setTranscript(srt.paragraphs[0])
   }, [])
 
-  return <>{transcript && <TranscriptWriter text={transcript} />}</>
+  return (
+    <AppContextProvider>
+      {transcript && <TranscriptWriter text={transcript} />}
+    </AppContextProvider>
+  )
 }
+
+export default DevTranscriptWriter

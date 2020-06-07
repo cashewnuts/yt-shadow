@@ -7,6 +7,7 @@ import React, {
   useRef,
   KeyboardEvent,
   useEffect,
+  useContext,
 } from 'react'
 import { SRTMeasure, SRTWord } from '../../models/srt'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,20 +17,25 @@ import {
   css,
   InterpolationWithTheme,
 } from '@emotion/core'
+import { AppContext } from '@/contexts/AppContext'
 
 export interface TranscriptWriterProps {
   text: SRTMeasure
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
-  inputContainer: css({
+  bottomContainer: css({
     height: '3em',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   }),
+  inputContainer: css({
+    width: 0,
+  }),
   inputStyle: css({
     width: '60%',
+    opacity: 0,
   }),
   word: css({
     paddingLeft: '0.5em',
@@ -83,7 +89,7 @@ class WordProcessor {
   key: string
   srtWord: SRTWord
   results: WordProcessorResult[]
-  length: number = 0
+  length = 0
   constructor(word: SRTWord) {
     this.key = uuidv4()
     this.srtWord = word
@@ -211,6 +217,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const [wordProcessors, setWordProcessors] = useState(
     text.words.map((w) => new WordProcessor(w))
   )
+  const { focus, setFocus } = useContext(AppContext)
 
   useEffect(() => {
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
@@ -262,6 +269,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     event.stopPropagation()
     setShowAnswer(!showAnswer)
   }
+  const inputSetFocusHandler = (bool: boolean) => () => setFocus(bool)
   return (
     <div onClick={wrapperFocusHandler} onTouchEnd={wrapperFocusHandler}>
       {text && (
@@ -277,15 +285,21 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
                 </span>
               ))}
           </p>
-          <div css={styles.inputContainer}>
-            <input
-              ref={inputRef}
-              css={styles.inputStyle}
-              onChange={changeInputHandler}
-              onKeyDown={keyDownInputHandler}
-              value={inputValue}
-            />
-            <button onClick={showAnswerClickHandler}>Show Answer</button>
+          <div css={styles.bottomContainer}>
+            <div css={styles.inputContainer}>
+              <input
+                ref={inputRef}
+                css={styles.inputStyle}
+                onChange={changeInputHandler}
+                onKeyDown={keyDownInputHandler}
+                onFocus={inputSetFocusHandler(true)}
+                onBlur={inputSetFocusHandler(false)}
+                value={inputValue}
+              />
+            </div>
+            {focus && (
+              <button onClick={showAnswerClickHandler}>Show Answer</button>
+            )}
           </div>
         </div>
       )}

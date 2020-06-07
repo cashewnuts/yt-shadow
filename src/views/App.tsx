@@ -11,6 +11,7 @@ import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter from './components/TranscriptWriter'
+import { AppContextProvider } from '../contexts/AppContext'
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -31,6 +32,7 @@ const styles: { [key: string]: CSSProperties } = {
   },
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
   const [videoId, setVideoId] = useState<string>()
   const srtRef = useRef<SRT>()
@@ -98,6 +100,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       if (!srtRef.current || !transcript) return
       const propName = 'srtTexts' in transcript ? 'paragraphs' : 'texts'
       const srt = srtRef.current
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const idx = transcript ? srt[propName].indexOf(transcript as any) : 0
       const matchedParagraph = srt[propName][idx + cremnt]
       if (matchedParagraph) {
@@ -109,44 +112,46 @@ const App = (props: PropsWithChildren<unknown>) => {
     }
   }
   return (
-    <div style={styles.wrapper}>
-      <YoutubeVideo
-        onLoaded={({ video }) => (videoRef.current = video)}
-        onPause={() => console.log('onPause')}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadStart={handleLoadStart}
-        render={(video) => (
-          <VideoPlayer
-            video={video}
-            start={scriptRange?.start}
-            end={scriptRange?.end}
-            onRangeOver={handleRangeOver}
-            onNext={handleNextPrevTranscript(1)}
-            onPrevious={handleNextPrevTranscript(-1)}
-          />
-        )}
-      />
-      <SubtitleLoader
-        videoId={videoId}
-        onSRTLoaded={handleSubtitleLoaded}
-        onError={handleError}
-        render={({ loading, subtitleNotExists }) => (
-          <>
-            {(loading || isAds) && (
-              <div style={styles.spinner}>
-                <Spinner />
-              </div>
-            )}
-            {subtitleNotExists && (
-              <div>
-                <h1>Subtitle Not Exists</h1>
-              </div>
-            )}
-          </>
-        )}
-      />
-      {transcript && <TranscriptWriter text={transcript} />}
-    </div>
+    <AppContextProvider>
+      <div style={styles.wrapper}>
+        <YoutubeVideo
+          onLoaded={({ video }) => (videoRef.current = video)}
+          onPause={() => console.log('onPause')}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadStart={handleLoadStart}
+          render={(video) => (
+            <VideoPlayer
+              video={video}
+              start={scriptRange?.start}
+              end={scriptRange?.end}
+              onRangeOver={handleRangeOver}
+              onNext={handleNextPrevTranscript(1)}
+              onPrevious={handleNextPrevTranscript(-1)}
+            />
+          )}
+        />
+        <SubtitleLoader
+          videoId={videoId}
+          onSRTLoaded={handleSubtitleLoaded}
+          onError={handleError}
+          render={({ loading, subtitleNotExists }) => (
+            <>
+              {(loading || isAds) && (
+                <div style={styles.spinner}>
+                  <Spinner />
+                </div>
+              )}
+              {subtitleNotExists && (
+                <div>
+                  <h1>Subtitle Not Exists</h1>
+                </div>
+              )}
+            </>
+          )}
+        />
+        {transcript && <TranscriptWriter text={transcript} />}
+      </div>
+    </AppContextProvider>
   )
 }
 
