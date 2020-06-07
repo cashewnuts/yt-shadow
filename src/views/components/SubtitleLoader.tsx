@@ -9,14 +9,14 @@ export interface SubtitleLoaderProps {
   render: (renderArg: { loading: boolean; subtitleNotExists: boolean }) => any
 }
 
-const getTimedTextUrl = (lang: string = 'en', v: string) => {
+const getTimedTextUrl = (lang = 'en', v: string) => {
   return `http://video.google.com/timedtext?lang=${lang}&v=${v}`
 }
 
 const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
-  const { videoId } = props
+  const { videoId, onSRTLoaded, onError } = props
 
   useEffect(() => {
     const asyncFn = async () => {
@@ -38,17 +38,23 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
         }
         console.log('xml', xml)
         const srt = new SRT(xml)
-        props.onSRTLoaded(srt)
+        onSRTLoaded(srt)
       } catch (err) {
-        if (props.onError) {
-          props.onError(err)
+        if (onError) {
+          onError(err)
         }
       }
     }
     asyncFn()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId])
 
-  return <>{props.render({ loading, subtitleNotExists })}</>
+  return (
+    <>
+      {props.render({ loading, subtitleNotExists })}
+      {props.children}
+    </>
+  )
 }
 
 export default SubtitleLoader

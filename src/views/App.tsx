@@ -11,14 +11,18 @@ import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter from './components/TranscriptWriter'
-import { AppContextProvider } from '../contexts/AppContext'
+import { AppContextConsumer } from '../contexts/AppContext'
+import VideoSlider from './components/VideoSlider'
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
+    display: 'flex',
     position: 'relative',
     width: 'auto',
     minHeight: '6em',
-    padding: '1em 0 1em 0',
+    padding: '1em 0.75em 1em 0.75em',
+    marginTop: '1em',
+    borderRadius: '3px',
   },
   spinner: {
     position: 'absolute',
@@ -30,6 +34,15 @@ const styles: { [key: string]: CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  playerContainer: {
+    width: '8em',
+    flexShrink: 1,
+  },
+  userInputContainer: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
+  },
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -37,12 +50,14 @@ const App = (props: PropsWithChildren<unknown>) => {
   const [videoId, setVideoId] = useState<string>()
   const srtRef = useRef<SRT>()
   const videoRef = useRef<HTMLVideoElement>()
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const [isAds, setIsAds] = useState(false)
   const [scriptRange, setScriptRange] = useState<{
     start: number
     end: number
   }>()
   const [transcript, setTranscript] = useState<SRTMeasure>()
+  const [rangeOpen, setRangeOpen] = useState(false)
 
   const updateTranscript = (text: SRTMeasure) => {
     setScriptRange({
@@ -91,9 +106,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       updateTranscript(matchedParagraph)
     }
   }
-  const handleRangeOver = (time: number) => {
-    console.log('handleRangeOver')
-    // videoRef.current?.pause();
+  const handleRangeOpen = () => {
+    setRangeOpen(!rangeOpen)
   }
   const handleNextPrevTranscript = (cremnt: 1 | -1) => {
     return () => {
@@ -111,47 +125,74 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
+  const handleClickWrapper = () => {
+    inputRef.current?.focus()
+  }
+  const handleRepeatVideo = () => {
+    if (transcript && videoRef.current) {
+      videoRef.current.currentTime = transcript.start
+    }
+  }
   return (
-    <AppContextProvider>
-      <div style={styles.wrapper}>
-        <YoutubeVideo
-          onLoaded={({ video }) => (videoRef.current = video)}
-          onPause={() => console.log('onPause')}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadStart={handleLoadStart}
-          render={(video) => (
-            <VideoPlayer
-              video={video}
+    <AppContextConsumer>
+      {({ focus }) => (
+        <div
+          style={{
+            ...styles.wrapper,
+            boxShadow: focus
+              ? '0px 0px 8px rgba(208, 0, 0, 0.5)'
+              : '0px 0px 3px rgba(40, 40, 40, 0.5)',
+          }}
+          onClick={handleClickWrapper}
+        >
+          <div style={styles.playerContainer}>
+            <YoutubeVideo
+              onLoaded={({ video }) => (videoRef.current = video)}
+              onPause={() => console.log('onPause')}
+              onTimeUpdate={handleTimeUpdate}
+              onLoadStart={handleLoadStart}
+              render={(video) => (
+                <VideoPlayer
+                  video={video}
+                  onRangeOpen={handleRangeOpen}
+                  onRepeat={handleRepeatVideo}
+                  onNext={handleNextPrevTranscript(1)}
+                  onPrevious={handleNextPrevTranscript(-1)}
+                />
+              )}
+            />
+          </div>
+          <div style={styles.userInputContainer}>
+            <VideoSlider
+              video={videoRef.current}
+              open={rangeOpen}
               start={scriptRange?.start}
               end={scriptRange?.end}
-              onRangeOver={handleRangeOver}
-              onNext={handleNextPrevTranscript(1)}
-              onPrevious={handleNextPrevTranscript(-1)}
             />
-          )}
-        />
-        <SubtitleLoader
-          videoId={videoId}
-          onSRTLoaded={handleSubtitleLoaded}
-          onError={handleError}
-          render={({ loading, subtitleNotExists }) => (
-            <>
-              {(loading || isAds) && (
-                <div style={styles.spinner}>
-                  <Spinner />
-                </div>
+            <SubtitleLoader
+              videoId={videoId}
+              onSRTLoaded={handleSubtitleLoaded}
+              onError={handleError}
+              render={({ loading, subtitleNotExists }) => (
+                <>
+                  {(loading || isAds) && (
+                    <div style={styles.spinner}>
+                      <Spinner />
+                    </div>
+                  )}
+                  {subtitleNotExists && (
+                    <div>
+                      <h1>Subtitle Not Exists</h1>
+                    </div>
+                  )}
+                </>
               )}
-              {subtitleNotExists && (
-                <div>
-                  <h1>Subtitle Not Exists</h1>
-                </div>
-              )}
-            </>
-          )}
-        />
-        {transcript && <TranscriptWriter text={transcript} />}
-      </div>
-    </AppContextProvider>
+            />
+            <TranscriptWriter text={transcript} inputRef={inputRef} />
+          </div>
+        </div>
+      )}
+    </AppContextConsumer>
   )
 }
 

@@ -3,11 +3,11 @@ import React, {
   PropsWithChildren,
   ChangeEvent,
   useState,
-  SyntheticEvent,
-  useRef,
   KeyboardEvent,
   useEffect,
   useContext,
+  MutableRefObject,
+  SyntheticEvent,
 } from 'react'
 import { SRTMeasure, SRTWord } from '../../models/srt'
 import { v4 as uuidv4 } from 'uuid'
@@ -20,11 +20,18 @@ import {
 import { AppContext } from '@/contexts/AppContext'
 
 export interface TranscriptWriterProps {
-  text: SRTMeasure
+  text?: SRTMeasure
+  inputRef: MutableRefObject<HTMLInputElement | null>
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
+  wrapper: css({
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
+  }),
   bottomContainer: css({
+    flexGrow: 0,
     height: '3em',
     display: 'flex',
     justifyContent: 'center',
@@ -39,13 +46,18 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
   word: css({
     paddingLeft: '0.5em',
+    cursor: 'pointer',
   }),
-  paragraph: css({
+  paragraphContainer: css({
+    flexGrow: 1,
     fontSize: '16px',
-    textAlign: 'center',
-    wordWrap: 'break-word',
     fontFamily: "'Roboto', monospace",
     margin: '0.75em 0',
+    padding: '0 1em',
+  }),
+  paragraph: css({
+    textAlign: 'center',
+    wordWrap: 'break-word',
   }),
   masked: css({
     borderBottom: '1px solid black',
@@ -209,17 +221,17 @@ class WordProcessor {
 }
 
 const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
-  const { text } = props
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { text, inputRef } = props
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
   const [wordProcessors, setWordProcessors] = useState(
-    text.words.map((w) => new WordProcessor(w))
+    text ? text.words.map((w) => new WordProcessor(w)) : []
   )
   const { focus, setFocus } = useContext(AppContext)
 
   useEffect(() => {
+    if (!text) return
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
   }, [text])
 
@@ -265,44 +277,45 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       }
     }
   }
-  const showAnswerClickHandler = (event: SyntheticEvent<HTMLElement>) => {
-    event.stopPropagation()
+  const showAnswerClickHandler = () => {
     setShowAnswer(!showAnswer)
   }
   const inputSetFocusHandler = (bool: boolean) => () => setFocus(bool)
+  const handleParagraphClick = (event: SyntheticEvent<HTMLElement>) => {
+    if (showAnswer) {
+      event.stopPropagation()
+    }
+  }
   return (
-    <div onClick={wrapperFocusHandler} onTouchEnd={wrapperFocusHandler}>
-      {text && (
-        <div>
-          <p
-            css={styles.paragraph}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {(inputValue || showAnswer || true) &&
-              wordProcessors.map((wp) => (
-                <span css={styles.word} key={wp.key}>
-                  {showAnswer ? wp.renderAnswer : wp.render}
-                </span>
-              ))}
-          </p>
-          <div css={styles.bottomContainer}>
-            <div css={styles.inputContainer}>
-              <input
-                ref={inputRef}
-                css={styles.inputStyle}
-                onChange={changeInputHandler}
-                onKeyDown={keyDownInputHandler}
-                onFocus={inputSetFocusHandler(true)}
-                onBlur={inputSetFocusHandler(false)}
-                value={inputValue}
-              />
-            </div>
-            {focus && (
-              <button onClick={showAnswerClickHandler}>Show Answer</button>
-            )}
-          </div>
+    <div
+      css={styles.wrapper}
+      onClick={wrapperFocusHandler}
+      onTouchEnd={wrapperFocusHandler}
+    >
+      <div css={styles.paragraphContainer}>
+        <p css={styles.paragraph} onClick={handleParagraphClick}>
+          {(inputValue || showAnswer || true) &&
+            wordProcessors.map((wp) => (
+              <span css={styles.word} key={wp.key}>
+                {showAnswer ? wp.renderAnswer : wp.render}
+              </span>
+            ))}
+        </p>
+      </div>
+      <div css={styles.bottomContainer}>
+        <div css={styles.inputContainer}>
+          <input
+            ref={inputRef}
+            css={styles.inputStyle}
+            onChange={changeInputHandler}
+            onKeyDown={keyDownInputHandler}
+            onFocus={inputSetFocusHandler(true)}
+            onBlur={inputSetFocusHandler(false)}
+            value={inputValue}
+          />
         </div>
-      )}
+        {text && <button onClick={showAnswerClickHandler}>Show Answer</button>}
+      </div>
     </div>
   )
 }
