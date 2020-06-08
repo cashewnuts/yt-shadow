@@ -7,10 +7,10 @@ import React, {
 
 export interface VideoPlayerProps {
   video: HTMLVideoElement
-  onNext?: () => any
-  onPrevious?: () => any
-  onRangeOpen: () => any
-  onRepeat: () => any
+  onNext?: () => void
+  onPrevious?: () => void
+  onRangeOpen?: () => void
+  onRepeat?: () => void
 }
 
 const styles: {
