@@ -22,6 +22,11 @@ import { AppContext } from '@/contexts/AppContext'
 export interface TranscriptWriterProps {
   text?: SRTMeasure
   inputRef: MutableRefObject<HTMLInputElement | null>
+  onToggle?: () => void
+  onNext?: () => void
+  onPrevious?: () => void
+  onRangeOpen?: () => void
+  onRepeat?: () => void
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -252,8 +257,8 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     inputRef.current?.focus()
   }
   const keyDownInputHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-    const { key, ctrlKey, metaKey } = event
-    if (key === 'Backspace' && (ctrlKey || metaKey)) {
+    const { key, ctrlKey } = event
+    if (key === 'Backspace' && ctrlKey) {
       event.preventDefault()
       if (!wordProcessors || wordProcessors.length === 0) {
         return
@@ -270,6 +275,15 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       const newInputValue = inputValue.substr(0, length - lastWp.length)
       updateWordProcessorInput(newInputValue)
       setInputValue(newInputValue)
+    }
+    if (key === 'n' && ctrlKey) {
+      props.onNext?.call(null)
+    }
+    if (key === 'p' && ctrlKey) {
+      props.onPrevious?.call(null)
+    }
+    if (key === 'r' && ctrlKey) {
+      props.onRepeat?.call(null)
     }
     if (inputEnded) {
       if (key === 'Enter' && ctrlKey) {

@@ -99,7 +99,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     const propName = PARAGRAPH_SELECTED ? 'paragraphs' : 'texts'
     const prop = srt[propName]
     const matchedParagraph = (prop as Array<SRTMeasure>).find(
-      (t) => t.start <= currentTime && currentTime <= t.start + t.dur
+      (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
     if (matchedParagraph) {
       console.log(matchedParagraph)
@@ -188,7 +188,14 @@ const App = (props: PropsWithChildren<unknown>) => {
                 </>
               )}
             />
-            <TranscriptWriter text={transcript} inputRef={inputRef} />
+            <TranscriptWriter
+              text={transcript}
+              inputRef={inputRef}
+              onRangeOpen={handleRangeOpen}
+              onRepeat={handleRepeatVideo}
+              onNext={handleNextPrevTranscript(1)}
+              onPrevious={handleNextPrevTranscript(-1)}
+            />
           </div>
         </div>
       )}
