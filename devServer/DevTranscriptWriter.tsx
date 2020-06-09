@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import SRT, { SRTMeasure } from '@/models/srt'
 import TranscriptWriter from '@/views/components/TranscriptWriter'
 import { AppContextProvider } from '@/contexts/AppContext'
@@ -20,6 +20,7 @@ const xmlObj = {
 
 const DevTranscriptWriter = () => {
   console.log(SRT)
+  const inputRef = useRef(null)
   const [transcript, setTranscript] = useState<SRTMeasure>()
   useEffect(() => {
     const srt = new SRT(xmlObj)
@@ -28,7 +29,7 @@ const DevTranscriptWriter = () => {
 
   return (
     <AppContextProvider>
-      {transcript && <TranscriptWriter text={transcript} />}
+      <TranscriptWriter text={transcript} inputRef={inputRef} />
     </AppContextProvider>
   )
 }
