@@ -58,6 +58,7 @@
   "dependencies": {
     "@emotion/core": "^10.0.28",
     "@types/uuid": "^7.0.3",
+    "dexie": "^3.0.1",
     "entities": "^2.0.2",
     "react": "^16.13.1",
     "react-app-polyfill": "^1.0.6",
