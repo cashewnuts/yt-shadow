@@ -18,6 +18,7 @@ import {
   InterpolationWithTheme,
 } from '@emotion/core'
 import { AppContext } from '@/contexts/AppContext'
+import CheckAnimation from './CheckAnimation'
 
 export interface TranscriptWriterProps {
   text?: SRTMeasure
@@ -328,7 +329,12 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
             value={inputValue}
           />
         </div>
-        {text && <button onClick={showAnswerClickHandler}>Show Answer</button>}
+        {text && (
+          <div>
+            <button onClick={showAnswerClickHandler}>Show Answer</button>
+            <CheckAnimation duration={450} />
+          </div>
+        )}
       </div>
     </div>
   )
