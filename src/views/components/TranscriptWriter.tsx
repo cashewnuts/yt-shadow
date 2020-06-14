@@ -35,6 +35,12 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     display: 'flex',
     flexDirection: 'column',
     flexGrow: 1,
+    position: 'relative',
+  }),
+  check: css({
+    position: 'absolute',
+    top: '5px',
+    right: '5px',
   }),
   bottomContainer: css({
     flexGrow: 0,
@@ -231,6 +237,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
+  const [showResult, setShowResult] = useState(false)
   const [wordProcessors, setWordProcessors] = useState(
     text ? text.words.map((w) => new WordProcessor(w)) : []
   )
@@ -240,6 +247,15 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     if (!text) return
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
   }, [text])
+  useEffect(() => {
+    if (!showAnswer) {
+      setShowResult(false)
+      return
+    }
+    const correct = wordProcessors.every((wp) => wp.isCorrect)
+    setShowResult(correct)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAnswer]) // wordProcessors
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
@@ -253,6 +269,10 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     const { value } = event.target
     updateWordProcessorInput(value)
     setInputValue(value)
+    if (showAnswer) {
+      const correct = wordProcessors.every((wp) => wp.isCorrect)
+      setShowResult(correct)
+    }
   }
   const wrapperFocusHandler = () => {
     inputRef.current?.focus()
@@ -307,6 +327,9 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       onClick={wrapperFocusHandler}
       onTouchEnd={wrapperFocusHandler}
     >
+      <div css={styles.check}>
+        {showResult && <CheckAnimation width={30} height={30} duration={450} />}
+      </div>
       <div css={styles.paragraphContainer}>
         <p css={styles.paragraph} onClick={handleParagraphClick}>
           {(inputValue || showAnswer || true) &&
@@ -332,7 +355,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         {text && (
           <div>
             <button onClick={showAnswerClickHandler}>Show Answer</button>
-            <CheckAnimation duration={450} />
           </div>
         )}
       </div>
