@@ -6,6 +6,8 @@ import React, {
   SetStateAction,
 } from 'react'
 import DatabaseMessageService from '@/services/database-message-service'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('AppContext.tsx')
 
 export interface AppContextParams {
   focus: boolean
@@ -15,7 +17,7 @@ export interface AppContextParams {
 
 export const AppContext = createContext<AppContextParams>({
   focus: true,
-  setFocus: () => console.log('default setFocus'),
+  setFocus: () => logger.debug('default setFocus'),
 })
 
 export const AppContextProvider = (props: PropsWithChildren<unknown>) => {

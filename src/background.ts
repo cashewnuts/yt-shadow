@@ -8,6 +8,8 @@ import {
   instanceOfTranscriptGetAction,
 } from './helpers/message-helper'
 import { db } from './storages/shadowing-db'
+import { createLogger } from './helpers/logger'
+const logger = createLogger('background.ts')
 
 var portFromCS: browser.runtime.Port
 
@@ -20,7 +22,7 @@ function connected(p: browser.runtime.Port) {
     if (instanceOfDatabaseAction(obj)) {
       await databaseActionHandler(portFromCS, obj)
     } else if (instanceOfMessage(obj)) {
-      console.log(obj.message)
+      logger.info(obj.message)
     }
   })
 }
@@ -31,12 +33,12 @@ async function databaseActionHandler(
 ) {
   if (instanceOfTranscriptBulkUpsertAction(action)) {
     let result = true
-    console.log('instanceOfTranscriptBulkUpsertAction')
+    logger.debug('instanceOfTranscriptBulkUpsertAction')
     try {
       await db.transcripts.bulkPut(action.value)
     } catch (err) {
       result = err
-      console.error(err)
+      logger.error(err)
     }
     port.postMessage({
       action: action.action,
@@ -48,11 +50,11 @@ async function databaseActionHandler(
     let result = null
     try {
       const { host, videoId } = action.value
-      console.log(host, videoId)
+      logger.debug(host, videoId)
       result = await db.transcripts.where({ host, videoId }).sortBy('start')
     } catch (err) {
       result = err
-      console.error(err)
+      logger.error(err)
     }
     port.postMessage({
       action: action.action,

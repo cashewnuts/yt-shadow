@@ -6,6 +6,8 @@ import React, {
   useRef,
 } from 'react'
 import { getElementAsync } from '../../helpers/dependency-helper'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('YoutubeVideo.tsx')
 
 export interface YoutubeVideoProps {
   onLoaded?: (args: { video: HTMLVideoElement }) => void
@@ -22,7 +24,7 @@ const YoutubeVideo = (
       youtubeRef.current = await getElementAsync<HTMLVideoElement>({
         query: "video[src*='blob:https://www.youtube.com']",
       })
-      console.log('video tag', youtubeRef.current, props)
+      logger.debug('video tag', youtubeRef.current, props)
       if (props.onLoaded) {
         props.onLoaded({ video: youtubeRef.current })
       }

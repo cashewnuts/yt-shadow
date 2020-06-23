@@ -13,6 +13,8 @@ import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter from './components/TranscriptWriter'
 import { AppContextConsumer } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -76,7 +78,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     updateVideoId()
   }, [])
   const handleSubtitleLoaded = (srt: SRT) => {
-    console.log('onSRTLoaded', srt, videoRef)
+    logger.debug('onSRTLoaded', srt, videoRef)
     srtRef.current = srt
     if (videoRef.current) {
       setIsAds(
@@ -85,10 +87,10 @@ const App = (props: PropsWithChildren<unknown>) => {
     }
   }
   const handleError = (err: Error) => {
-    console.error(err)
+    logger.error(err)
   }
   const handleLoadStart = () => {
-    console.log('onLoadStart', srtRef.current, videoRef)
+    logger.debug('onLoadStart', srtRef.current, videoRef)
     updateVideoId()
   }
   const handleTimeUpdate = () => {
@@ -102,7 +104,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
     if (matchedParagraph) {
-      console.log(matchedParagraph)
+      logger.debug(matchedParagraph)
       updateTranscript(matchedParagraph)
     }
   }
@@ -148,7 +150,7 @@ const App = (props: PropsWithChildren<unknown>) => {
           <div style={styles.playerContainer}>
             <YoutubeVideo
               onLoaded={({ video }) => (videoRef.current = video)}
-              onPause={() => console.log('onPause')}
+              onPause={() => logger.debug('onPause')}
               onTimeUpdate={handleTimeUpdate}
               onLoadStart={handleLoadStart}
               render={(video) => (
