@@ -9,7 +9,7 @@ import React, {
   MutableRefObject,
   SyntheticEvent,
 } from 'react'
-import { SRTMeasure, SRTWord } from '../../models/srt'
+import { SRTMeasure } from '../../models/srt'
 import { v4 as uuidv4 } from 'uuid'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -111,13 +111,13 @@ interface WordProcessorResult {
 
 class WordProcessor {
   key: string
-  srtWord: SRTWord
+  srtWord: string
   results: WordProcessorResult[]
   length = 0
-  constructor(word: SRTWord) {
+  constructor(word: string) {
     this.key = uuidv4()
     this.srtWord = word
-    this.results = word.word.split('').map((w) => ({
+    this.results = word.split('').map((w) => ({
       w,
       mask: WHITE_SPACE,
       correct: false,
@@ -127,7 +127,7 @@ class WordProcessor {
 
   get isCorrect() {
     return (
-      this.srtWord.word.length === this.results.length &&
+      this.srtWord.length === this.results.length &&
       this.results.every((r) => r.correct)
     )
   }
@@ -152,7 +152,7 @@ class WordProcessor {
   input(str: string) {
     let spaceCount = 0
     this.length = 0
-    const word = this.srtWord.word
+    const word = this.srtWord
     const results: WordProcessorResult[] = []
     let index = '0'
     for (index in str.split('')) {

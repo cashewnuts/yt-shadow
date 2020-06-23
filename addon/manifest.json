@@ -8,6 +8,9 @@
     "48": "icons/yt-48.png",
     "96": "icons/yt-96.png"
   },
+  "background": {
+    "scripts": ["browser-polyfill.min.js", "background.js"]
+  },
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
@@ -24,5 +27,11 @@
     "default_title": "Yt Shadow",
     "default_popup": "popup/popup.html"
   },
-  "permissions": ["*://video.google.com/*", "storage"]
+  "permissions": [
+    "*://video.google.com/*",
+    "runtime",
+    "notifications",
+    "storage",
+    "unlimitedStorage"
+  ]
 }

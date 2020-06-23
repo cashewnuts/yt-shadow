@@ -1,12 +1,12 @@
 import Dexie from 'dexie'
 
 export default class ShadowingDatabase extends Dexie {
-  transcripts: Dexie.Table<ITranscript, string>
+  transcripts: Dexie.Table<TranscriptIndex, string>
 
   constructor() {
     super('ShadowingDatabase')
     this.version(1).stores({
-      transcripts: '++id, [videoId+textId], start',
+      transcripts: '[host+videoId+start], [host+videoId], *words',
     })
     // The following line is needed if your typescript
     // is compiled using babel instead of tsc:
@@ -14,11 +14,11 @@ export default class ShadowingDatabase extends Dexie {
   }
 }
 
-export interface ITranscript {
-  id?: number
+export interface TranscriptIndex {
+  host: string
   videoId: string
-  textId: string
   start: number
+  words?: string[]
 }
 
 export const db = new ShadowingDatabase()
