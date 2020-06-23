@@ -5,6 +5,8 @@ import React, {
   CSSProperties,
   ChangeEvent,
 } from 'react'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('VideoSlider.tsx')
 
 const styles: {
   [key: string]: CSSProperties
@@ -43,7 +45,7 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(video?.duration || 0)
   useEffect(() => {
-    console.log('useEffect1', video, start, end)
+    logger.debug('useEffect1', video, start, end)
     if (!video) return
     const updateCurrentTime = () => {
       const currentTime = video.currentTime || 0

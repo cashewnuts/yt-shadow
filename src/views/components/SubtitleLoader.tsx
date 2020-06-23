@@ -8,6 +8,8 @@ import { parseStringPromise } from 'xml2js'
 import SRT from '../../models/srt'
 import { AppContext } from '@/contexts/AppContext'
 import Transcript from '@/models/transcript'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('SubtitleLoader.tsx')
 
 export interface SubtitleLoaderProps {
   videoId?: string
@@ -35,7 +37,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
       setLoading(true)
       try {
         const url = getTimedTextUrl('en', videoId)
-        console.log('transcript url', url)
+        logger.debug('transcript url', url)
         const response = await fetch(url)
         const text = await response.text()
         const xml = await parseStringPromise(text)
@@ -44,7 +46,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
           setSubtitleNotExists(true)
           return
         }
-        console.log('xml', xml)
+        logger.debug('xml', xml)
         const srt = new SRT(xml)
         const host = window.location.host
         const transcripts = srt.texts.map(
@@ -58,9 +60,9 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
             })
         )
         const resultUpsert = await dbMessageService?.bulkUpsert(transcripts)
-        console.log('result: bulkUpsert', resultUpsert)
+        logger.debug('result: bulkUpsert', resultUpsert)
         const result = await dbMessageService?.get(host, videoId)
-        console.log('result: get', result)
+        logger.debug('result: get', result)
         onSRTLoaded(srt)
       } catch (err) {
         if (onError) {

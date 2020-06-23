@@ -9,18 +9,20 @@ import {
   instanceOfDatabaseAction,
   instanceOfMessage,
 } from '@/helpers/message-helper'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('database-message-service.ts')
 
 export default class DatabaseMessageService {
   port: browser.runtime.Port
   constructor() {
     this.port = browser.runtime.connect({ name: 'DatabaseMessageService' })
     this.port.onDisconnect.addListener((port: browser.runtime.Port) => {
-      console.log('DatabaseMessageService: disconnected', port)
+      logger.info('DatabaseMessageService: disconnected', port)
     })
     // Message listener to background message
     this.port.onMessage.addListener(function (m) {
       if (instanceOfMessage(m)) {
-        console.log(m.message)
+        logger.info(m.message)
       }
     })
     this.port.postMessage<ConnectionMessage>({

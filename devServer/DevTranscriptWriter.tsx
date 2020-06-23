@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import SRT, { SRTMeasure } from '@/models/srt'
 import TranscriptWriter from '@/views/components/TranscriptWriter'
 import { AppContextProvider } from '@/contexts/AppContext'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('DevTranscriptWriter.tsx')
 
 const xmlObj = {
   transcript: {
@@ -19,7 +21,7 @@ const xmlObj = {
 }
 
 const DevTranscriptWriter = () => {
-  console.log(SRT)
+  logger.debug(SRT)
   const inputRef = useRef(null)
   const [transcript, setTranscript] = useState<SRTMeasure>()
   useEffect(() => {
