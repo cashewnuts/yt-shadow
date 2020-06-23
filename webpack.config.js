@@ -10,6 +10,7 @@ const webpackConfig = {
   mode: NODE_ENV,
   entry: {
     'yt-shadow': './src/yt-shadow.ts',
+    background: './src/background.ts',
     'popup/popup': './src/popup.ts',
   },
   output: {

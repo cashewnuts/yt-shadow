@@ -1,9 +1,8 @@
-import { ITranscript } from './shadowing-db'
-import sha256 from 'crypto-js/sha256'
-import base64 from 'crypto-js/enc-base64'
+import { TranscriptIndex } from '@/storages/shadowing-db'
 
-export interface TranscriptParams extends Omit<ITranscript, 'textId'> {
-  textId?: string
+export interface ITranscript extends TranscriptIndex {
+  videoId: string
+  start: number
   text: string
   dur?: number
   answer?: string
@@ -14,9 +13,9 @@ export interface TranscriptParams extends Omit<ITranscript, 'textId'> {
 }
 
 export default class Transcript implements ITranscript {
-  public id?: number
+  public host: string
   public videoId: string
-  public textId: string
+  public words: string[]
   public start: number
   public dur?: number
   public text: string
@@ -26,12 +25,12 @@ export default class Transcript implements ITranscript {
   public createdAt: number
   public updatedAt: number
 
-  constructor(params: TranscriptParams) {
+  constructor(params: ITranscript) {
     const {
-      id,
+      host,
       videoId,
-      textId,
       start,
+      words,
       dur,
       text,
       answer,
@@ -40,10 +39,10 @@ export default class Transcript implements ITranscript {
       createdAt,
       updatedAt,
     } = params
-    this.id = id
+    this.host = host
     this.videoId = videoId
-    this.textId = textId || sha256(text).toString(base64)
     this.start = start
+    this.words = words || []
     this.dur = dur
     this.text = text
     this.answer = answer || ''
@@ -51,8 +50,5 @@ export default class Transcript implements ITranscript {
     this.skip = skip || false
     this.createdAt = createdAt || Date.now()
     this.updatedAt = updatedAt || Date.now()
-    if (!this.textId) {
-      throw new Error('textId is not set.')
-    }
   }
 }

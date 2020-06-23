@@ -5,12 +5,12 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react'
-import DatabaseService, { dbService } from '@/services/database-service'
+import DatabaseMessageService from '@/services/database-message-service'
 
 export interface AppContextParams {
   focus: boolean
   setFocus: Dispatch<SetStateAction<boolean>>
-  dbService?: DatabaseService
+  dbMessageService?: DatabaseMessageService
 }
 
 export const AppContext = createContext<AppContextParams>({
@@ -25,7 +25,7 @@ export const AppContextProvider = (props: PropsWithChildren<unknown>) => {
       value={{
         focus,
         setFocus,
-        dbService,
+        dbMessageService: new DatabaseMessageService(),
       }}
     >
       {props.children}

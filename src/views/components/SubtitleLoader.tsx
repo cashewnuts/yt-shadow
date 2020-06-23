@@ -1,6 +1,13 @@
-import React, { PropsWithChildren, useState, useEffect } from 'react'
+import React, {
+  PropsWithChildren,
+  useState,
+  useEffect,
+  useContext,
+} from 'react'
 import { parseStringPromise } from 'xml2js'
 import SRT from '../../models/srt'
+import { AppContext } from '@/contexts/AppContext'
+import Transcript from '@/models/transcript'
 
 export interface SubtitleLoaderProps {
   videoId?: string
@@ -17,6 +24,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
   const { videoId, onSRTLoaded, onError } = props
+  const { dbMessageService } = useContext(AppContext)
 
   useEffect(() => {
     const asyncFn = async () => {
@@ -38,6 +46,21 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
         }
         console.log('xml', xml)
         const srt = new SRT(xml)
+        const host = window.location.host
+        const transcripts = srt.texts.map(
+          (t) =>
+            new Transcript({
+              host,
+              videoId,
+              start: t.start,
+              text: t.text,
+              words: t.words,
+            })
+        )
+        const resultUpsert = await dbMessageService?.bulkUpsert(transcripts)
+        console.log('result: bulkUpsert', resultUpsert)
+        const result = await dbMessageService?.get(host, videoId)
+        console.log('result: get', result)
         onSRTLoaded(srt)
       } catch (err) {
         if (onError) {
