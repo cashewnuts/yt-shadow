@@ -25,11 +25,13 @@ import { logger } from '@/helpers/logger'
 export interface TranscriptWriterProps {
   text?: SRTMeasure
   inputRef: MutableRefObject<HTMLInputElement | null>
-  onToggle?: () => void
+  onPlay?: () => void
+  onPause?: () => void
   onNext?: () => void
   onPrevious?: () => void
-  onRangeOpen?: () => void
   onRepeat?: () => void
+  onRangeOpen?: () => void
+  onFocus?: (focus: boolean) => void
   onInput?: (value: string) => void
   onCheckAnswer?: (isCorrect: boolean) => void
 }
@@ -70,6 +72,9 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     fontFamily: "'Roboto', monospace",
     margin: '0.75em 0',
     padding: '0 1em',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   }),
   paragraph: css({
     textAlign: 'center',
@@ -101,6 +106,12 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     width: '.75em',
     fontStyle: 'normal',
     marginLeft: '1px',
+  }),
+  diffButton: css({
+    opacity: 0.6,
+    '&:hover': {
+      opacity: 1,
+    },
   }),
 }
 
@@ -300,6 +311,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   useEffect(() => {
     if (!text) return
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
+    setInputValue('')
+    setShowAnswer(false)
+    setShowDiff(false)
+    setResult({
+      show: false,
+      correct: false,
+    })
   }, [text])
   useEffect(() => {
     if (!showAnswer) {
@@ -344,9 +362,14 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     inputRef.current?.focus()
   }
   const keyDownInputHandler = (event: KeyboardEvent<HTMLInputElement>) => {
-    const { key, ctrlKey } = event
-    if (key === 'Backspace' && ctrlKey) {
+    const { key, ctrlKey, metaKey, altKey } = event
+    logger.debug('keydown', key, { ctrlKey, metaKey, altKey })
+    const stopPrevents = () => {
       event.preventDefault()
+      event.stopPropagation()
+    }
+    if (key === 'Backspace' && ctrlKey) {
+      stopPrevents()
       if (!wordProcessors || wordProcessors.length === 0) {
         return
       }
@@ -363,14 +386,29 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       updateWordProcessorInput(newInputValue)
       setInputValue(newInputValue)
     }
-    if (key === 'n' && ctrlKey) {
-      props.onNext?.call(null)
-    }
-    if (key === 'p' && ctrlKey) {
+    if (key === 'h' && ctrlKey) {
+      stopPrevents()
       props.onPrevious?.call(null)
     }
-    if (key === 'r' && ctrlKey) {
+    if (key === 'j' && ctrlKey) {
+      stopPrevents()
+      props.onPause?.call(null)
+    }
+    if (key === 'k' && ctrlKey) {
+      stopPrevents()
+      props.onPlay?.call(null)
+    }
+    if (key === 'l' && ctrlKey) {
+      stopPrevents()
+      props.onNext?.call(null)
+    }
+    if (key === 'u' && ctrlKey) {
+      stopPrevents()
       props.onRepeat?.call(null)
+    }
+    if (key === 'o' && ctrlKey) {
+      stopPrevents()
+      setShowAnswer(!showAnswer)
     }
     if (inputEnded) {
       if (key === 'Enter' && ctrlKey) {
@@ -381,7 +419,10 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const showAnswerClickHandler = () => {
     setShowAnswer(!showAnswer)
   }
-  const inputSetFocusHandler = (bool: boolean) => () => setFocus(bool)
+  const inputSetFocusHandler = (bool: boolean) => () => {
+    setFocus(bool)
+    props.onFocus?.call(null, bool)
+  }
   const handleParagraphClick = (event: SyntheticEvent<HTMLElement>) => {
     if (showAnswer) {
       event.stopPropagation()
@@ -398,7 +439,10 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-            <button onClick={() => setShowDiff(!showDiff)}>
+            <button
+              css={styles.diffButton}
+              onClick={() => setShowDiff(!showDiff)}
+            >
               {showDiff ? 'correct' : 'diff'}
             </button>
           ))}

@@ -47,6 +47,11 @@ const styles: { [key: string]: CSSProperties } = {
   },
 }
 
+enum SRTPropName {
+  paragraphs = 'paragraphs',
+  texts = 'texts',
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
   const [videoId, setVideoId] = useState<string>()
@@ -60,6 +65,10 @@ const App = (props: PropsWithChildren<unknown>) => {
   }>()
   const [transcript, setTranscript] = useState<SRTMeasure>()
   const [rangeOpen, setRangeOpen] = useState(false)
+  const [hasInputFocus, setInputFocus] = useState(false)
+  const [srtGrainSize, setSrtGrainSize] = useState<SRTPropName>(
+    SRTPropName.texts
+  )
 
   const updateTranscript = (text: SRTMeasure) => {
     setScriptRange({
@@ -102,15 +111,28 @@ const App = (props: PropsWithChildren<unknown>) => {
     if (!videoRef.current || !srtRef.current) return
     const { currentTime } = videoRef.current
     const srt = srtRef.current
-    const PARAGRAPH_SELECTED = true
-    const propName = PARAGRAPH_SELECTED ? 'paragraphs' : 'texts'
-    const prop = srt[propName]
-    const matchedParagraph = (prop as Array<SRTMeasure>).find(
+    const prop = srt[srtGrainSize]
+    const matchedScript = (prop as Array<SRTMeasure>).find(
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
-    if (matchedParagraph) {
-      logger.debug(matchedParagraph)
-      updateTranscript(matchedParagraph)
+    if (!matchedScript) return
+    logger.debug('matchedScript', matchedScript)
+    updateTranscript(matchedScript)
+  }
+  const handleToggleVideo = () => {
+    const video = videoRef.current
+    if (!video) return
+    if (video.paused) {
+      video.play()
+    } else {
+      video.pause()
+    }
+  }
+  const handleVideoStateChange = (bool: boolean) => () => {
+    if (bool) {
+      videoRef.current?.play()
+    } else {
+      videoRef.current?.pause()
     }
   }
   const handleRangeOpen = () => {
@@ -118,19 +140,16 @@ const App = (props: PropsWithChildren<unknown>) => {
   }
   const handleNextPrevTranscript = (crement: 1 | -1) => {
     return () => {
-      if (!videoRef.current || !srtRef.current || !transcript) return
-      const propName = 'srtTexts' in transcript ? 'paragraphs' : 'texts'
+      if (!videoRef.current || !srtRef.current) return
       const srt = srtRef.current
       const video = videoRef.current
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let idx =
-        srt[propName].findIndex(
+      const idx =
+        srt[srtGrainSize].findIndex(
           (measure: SRTMeasure) => video.currentTime < measure.start
         ) - 1
       logger.debug('next or prev', idx)
-      if (idx < 0) idx = 0
-      const currentParagraph = srt[propName][idx]
-      const matchedParagraph = srt[propName][idx + crement]
+      const currentParagraph = srt[srtGrainSize][idx]
+      const matchedParagraph = srt[srtGrainSize][idx + crement]
       if (
         crement === -1 &&
         Math.abs(currentParagraph.start - video.currentTime) > 0.5
@@ -177,6 +196,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               render={(video) => (
                 <VideoPlayer
                   video={video}
+                  onToggle={handleToggleVideo}
                   onRangeOpen={handleRangeOpen}
                   onRepeat={handleRepeatVideo}
                   onNext={handleNextPrevTranscript(1)}
@@ -214,7 +234,10 @@ const App = (props: PropsWithChildren<unknown>) => {
             <TranscriptWriter
               text={transcript}
               inputRef={inputRef}
+              onFocus={(focus) => setInputFocus(focus)}
               onRangeOpen={handleRangeOpen}
+              onPlay={handleVideoStateChange(true)}
+              onPause={handleVideoStateChange(false)}
               onRepeat={handleRepeatVideo}
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
