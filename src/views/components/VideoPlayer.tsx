@@ -7,6 +7,7 @@ import React, {
 
 export interface VideoPlayerProps {
   video: HTMLVideoElement
+  onToggle?: () => void
   onNext?: () => void
   onPrevious?: () => void
   onRangeOpen?: () => void
@@ -58,7 +59,7 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
         <button style={styles.button} onClick={props.onRepeat}>
           repeat
         </button>
-        <button style={styles.button} onClick={handlePlayClick}>
+        <button style={styles.button} onClick={props.onToggle}>
           {isPlaying ? 'stop' : 'play'}
         </button>
         <button style={styles.button} onClick={props.onPrevious}>
