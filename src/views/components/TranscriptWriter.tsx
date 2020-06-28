@@ -83,18 +83,23 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     marginLeft: '1px',
   }),
   correct: css({
-    text: 'blue',
     display: 'inline-block',
     width: '.75em',
     fontStyle: 'normal',
     marginLeft: '1px',
   }),
   wrong: css({
-    text: 'red',
     background: 'yellow',
     display: 'inline-block',
     width: '.75em',
     fontStyle: 'italic',
+    marginLeft: '1px',
+  }),
+  notInput: css({
+    background: 'yellow',
+    display: 'inline-block',
+    width: '.75em',
+    fontStyle: 'normal',
     marginLeft: '1px',
   }),
 }
@@ -249,7 +254,7 @@ class WordProcessor {
     return (
       <span>
         {this.results.map((rslt, index) => (
-          <i key={index} css={rslt.correct ? styles.correct : styles.wrong}>
+          <i key={index} css={this.getAnswerCss(rslt)}>
             {rslt.s && !rslt.correct ? rslt.s : rslt.w}
           </i>
         ))}
@@ -261,12 +266,19 @@ class WordProcessor {
     return (
       <span>
         {this.results.map((rslt, index) => (
-          <i key={index} css={rslt.correct ? styles.correct : styles.wrong}>
+          <i key={index} css={this.getAnswerCss(rslt)}>
             {rslt.w}
           </i>
         ))}
       </span>
     )
+  }
+
+  private getAnswerCss(result: WordProcessorResult) {
+    if (result.correct) {
+      return styles.correct
+    }
+    return result.s ? styles.wrong : styles.notInput
   }
 }
 
@@ -275,7 +287,11 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
-  const [showResult, setShowResult] = useState(false)
+  const [showDiff, setShowDiff] = useState(false)
+  const [result, setResult] = useState({
+    show: false,
+    correct: false,
+  })
   const [wordProcessors, setWordProcessors] = useState(
     text ? text.words.map((w) => new WordProcessor(w)) : []
   )
@@ -287,11 +303,17 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   }, [text])
   useEffect(() => {
     if (!showAnswer) {
-      setShowResult(false)
+      setResult({
+        show: false,
+        correct: false,
+      })
       return
     }
     const correct = wordProcessors.every((wp) => wp.isCorrect)
-    setShowResult(correct)
+    setResult({
+      show: true,
+      correct,
+    })
     props.onCheckAnswer?.call(null, correct)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAnswer]) // wordProcessors
@@ -312,7 +334,10 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     setInputValue(value)
     if (showAnswer) {
       const correct = wordProcessors.every((wp) => wp.isCorrect)
-      setShowResult(correct)
+      setResult({
+        ...result,
+        correct,
+      })
     }
   }
   const wrapperFocusHandler = () => {
@@ -369,14 +394,22 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       onTouchEnd={wrapperFocusHandler}
     >
       <div css={styles.check}>
-        {showResult && <CheckAnimation width={30} height={30} duration={450} />}
+        {result.show &&
+          (result.correct ? (
+            <CheckAnimation width={30} height={30} duration={450} />
+          ) : (
+            <button onClick={() => setShowDiff(!showDiff)}>
+              {showDiff ? 'diff' : 'correct'}
+            </button>
+          ))}
       </div>
       <div css={styles.paragraphContainer}>
         <p css={styles.paragraph} onClick={handleParagraphClick}>
           {(inputValue || showAnswer || true) &&
             wordProcessors.map((wp) => (
               <span css={styles.word} key={wp.key}>
-                {showAnswer ? wp.renderAnswer : wp.render}
+                {showAnswer && (showDiff ? wp.renderDiff : wp.renderAnswer)}
+                {!showAnswer && wp.render}
               </span>
             ))}
         </p>
