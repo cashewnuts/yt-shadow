@@ -77,14 +77,18 @@ const App = (props: PropsWithChildren<unknown>) => {
   useEffect(() => {
     updateVideoId()
   }, [])
-  const handleSubtitleLoaded = (srt: SRT) => {
-    logger.debug('onSRTLoaded', srt, videoRef)
-    srtRef.current = srt
-    if (videoRef.current) {
+  const checkUpdateIsAds = () => {
+    if (videoRef.current && srtRef.current) {
+      const srt = srtRef.current
       setIsAds(
         videoRef.current.duration < srt.texts[srt.texts.length - 1].start
       )
     }
+  }
+  const handleSubtitleLoaded = (srt: SRT) => {
+    logger.debug('onSRTLoaded', srt, videoRef)
+    srtRef.current = srt
+    checkUpdateIsAds()
   }
   const handleError = (err: Error) => {
     logger.error(err)
@@ -92,6 +96,7 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleLoadStart = () => {
     logger.debug('onLoadStart', srtRef.current, videoRef)
     updateVideoId()
+    checkUpdateIsAds()
   }
   const handleTimeUpdate = () => {
     if (!videoRef.current || !srtRef.current) return
