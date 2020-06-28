@@ -116,19 +116,26 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleRangeOpen = () => {
     setRangeOpen(!rangeOpen)
   }
-  const handleNextPrevTranscript = (cremnt: 1 | -1) => {
+  const handleNextPrevTranscript = (crement: 1 | -1) => {
     return () => {
-      if (!srtRef.current || !transcript) return
+      if (!videoRef.current || !srtRef.current || !transcript) return
       const propName = 'srtTexts' in transcript ? 'paragraphs' : 'texts'
       const srt = srtRef.current
+      const video = videoRef.current
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const idx = transcript ? srt[propName].indexOf(transcript as any) : 0
-      const matchedParagraph = srt[propName][idx + cremnt]
-      if (matchedParagraph) {
+      let idx =
+        srt[propName].findIndex(
+          (measure: SRTMeasure) => video.currentTime < measure.start
+        ) - 1
+      logger.debug('next or prev', idx)
+      if (idx < 0) idx = 0
+      const currentParagraph = srt[propName][idx]
+      const matchedParagraph = srt[propName][idx + crement]
+      if (crement === -1 && currentParagraph.start !== video.currentTime) {
+        video.currentTime = currentParagraph.start
+      } else if (matchedParagraph) {
         updateTranscript(matchedParagraph)
-        if (videoRef.current) {
-          videoRef.current.currentTime = matchedParagraph.start
-        }
+        video.currentTime = matchedParagraph.start
       }
     }
   }
