@@ -127,6 +127,12 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
+  const handleTranscriptInput = (str: string) => {
+    logger.debug('handleTranscriptInput', str)
+  }
+  const handleTranscriptCheckAnswer = (bool: boolean) => {
+    logger.debug('handleTranscriptCheckAnswer', bool)
+  }
   const handleClickWrapper = () => {
     inputRef.current?.focus()
   }
@@ -197,6 +203,8 @@ const App = (props: PropsWithChildren<unknown>) => {
               onRepeat={handleRepeatVideo}
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
+              onInput={handleTranscriptInput}
+              onCheckAnswer={handleTranscriptCheckAnswer}
             />
           </div>
         </div>

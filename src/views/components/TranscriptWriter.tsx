@@ -19,6 +19,7 @@ import {
 } from '@emotion/core'
 import { AppContext } from '@/contexts/AppContext'
 import CheckAnimation from './CheckAnimation'
+import { checkSpokenChar, WHITE_SPACE } from '@/helpers/text-helper'
 
 export interface TranscriptWriterProps {
   text?: SRTMeasure
@@ -28,6 +29,8 @@ export interface TranscriptWriterProps {
   onPrevious?: () => void
   onRangeOpen?: () => void
   onRepeat?: () => void
+  onInput?: (value: string) => void
+  onCheckAnswer?: (isCorrect: boolean) => void
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -95,12 +98,6 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
 }
 
-const WHITE_SPACE = '\u00A0'
-const SYMBOLS = ',.?<>/!@#$%^&*()-=_+[]{}|:;\'"'
-const checkSpokenChar = (str: string) => {
-  return SYMBOLS.indexOf(str) === -1
-}
-
 interface WordProcessorResult {
   w: string
   s?: string
@@ -136,6 +133,12 @@ class WordProcessor {
   }
   get end() {
     return this.results.every((r) => Boolean(r.s || !r.spoken))
+  }
+  get answerText() {
+    return this.results
+      .map(({ s }) => s)
+      .filter(Boolean)
+      .join('')
   }
 
   validInput() {
@@ -254,6 +257,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     }
     const correct = wordProcessors.every((wp) => wp.isCorrect)
     setShowResult(correct)
+    props.onCheckAnswer?.call(null, correct)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showAnswer]) // wordProcessors
 
@@ -262,6 +266,8 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       str = wordProcessor.input(str)
     }
     setWordProcessors(wordProcessors)
+    const answerText = wordProcessors.map((wp) => wp.answerText).join(' ')
+    props.onInput?.call(null, answerText)
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
   }
