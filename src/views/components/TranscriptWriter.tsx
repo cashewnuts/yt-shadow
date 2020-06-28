@@ -20,6 +20,7 @@ import {
 import { AppContext } from '@/contexts/AppContext'
 import CheckAnimation from './CheckAnimation'
 import { checkSpokenChar, WHITE_SPACE } from '@/helpers/text-helper'
+import { logger } from '@/helpers/logger'
 
 export interface TranscriptWriterProps {
   text?: SRTMeasure
@@ -153,7 +154,7 @@ class WordProcessor {
   }
 
   input(str: string) {
-    let spaceCount = 0
+    let offsetCursor = 0
     this.length = 0
     const word = this.srtWord
     const results: WordProcessorResult[] = []
@@ -163,13 +164,35 @@ class WordProcessor {
       const s = str[idxNum]
       const isSpace = /\s/.test(s)
       if (isSpace) {
-        spaceCount++
+        offsetCursor++
         continue
       }
-      const wordIndex = idxNum - spaceCount
+      const wordIndex = idxNum - offsetCursor
       const w = word[wordIndex]
       const spoken = checkSpokenChar(w)
-      if (!spoken && s !== w) {
+      // if 's' is Symbols and not equels to 'w', then check next char is correct
+      if (!spoken && w !== s) {
+        const nw = word[wordIndex + 1]
+        const _spoken = checkSpokenChar(nw)
+
+        results.push({
+          w,
+          s: w,
+          mask: WHITE_SPACE,
+          correct: true,
+          spoken,
+        })
+        results.push({
+          w: nw,
+          s,
+          mask: WHITE_SPACE,
+          correct: s.toLowerCase() === nw.toLowerCase() || !_spoken,
+          spoken: _spoken,
+        })
+        offsetCursor--
+        if (word.length <= results.length) {
+          break
+        }
         continue
       }
       results.push({
@@ -216,6 +239,18 @@ class WordProcessor {
         {this.results.map((rslt, index) => (
           <i css={styles.masked} key={index}>
             {rslt.spoken ? (rslt.s ? rslt.s : rslt.mask) : rslt.w}
+          </i>
+        ))}
+      </span>
+    )
+  }
+
+  get renderDiff() {
+    return (
+      <span>
+        {this.results.map((rslt, index) => (
+          <i key={index} css={rslt.correct ? styles.correct : styles.wrong}>
+            {rslt.s && !rslt.correct ? rslt.s : rslt.w}
           </i>
         ))}
       </span>
