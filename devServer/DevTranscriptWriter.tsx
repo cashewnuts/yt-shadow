@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import SRT, { SRTMeasure } from '@/models/srt'
 import TranscriptWriter from '@/views/components/TranscriptWriter'
-import { AppContextProvider } from '@/contexts/AppContext'
+import { AppContextProvider } from './contexts/AppContext'
 import { createLogger } from '@/helpers/logger'
 const logger = createLogger('DevTranscriptWriter.tsx')
 
@@ -9,7 +9,8 @@ const xmlObj = {
   transcript: {
     text: [
       {
-        _: 'This is not a rhetorical question.',
+        _:
+          "Inside your head, you're like, \"It's one. You're speaking it,buddy. I'm done.\"",
         $: { start: '18.16', dur: '1.661' },
       },
       {
