@@ -56,7 +56,12 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
               videoId,
               start: t.start,
               text: t.text,
-              words: t.words,
+              words: Object.keys(
+                t.words.reduce((wordObj: { [key: string]: boolean }, word) => {
+                  wordObj[word] = true
+                  return wordObj
+                }, {})
+              ),
             })
         )
         const resultUpsert = await dbMessageService?.bulkUpsert(transcripts)
