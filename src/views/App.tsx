@@ -131,7 +131,10 @@ const App = (props: PropsWithChildren<unknown>) => {
       if (idx < 0) idx = 0
       const currentParagraph = srt[propName][idx]
       const matchedParagraph = srt[propName][idx + crement]
-      if (crement === -1 && currentParagraph.start !== video.currentTime) {
+      if (
+        crement === -1 &&
+        Math.abs(currentParagraph.start - video.currentTime) > 0.5
+      ) {
         video.currentTime = currentParagraph.start
       } else if (matchedParagraph) {
         updateTranscript(matchedParagraph)

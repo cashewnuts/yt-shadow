@@ -399,7 +399,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
             <button onClick={() => setShowDiff(!showDiff)}>
-              {showDiff ? 'diff' : 'correct'}
+              {showDiff ? 'correct' : 'diff'}
             </button>
           ))}
       </div>
