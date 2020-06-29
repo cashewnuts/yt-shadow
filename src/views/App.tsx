@@ -116,7 +116,11 @@ const App = (props: PropsWithChildren<unknown>) => {
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
     if (!matchedScript) return
-    logger.debug('matchedScript', matchedScript)
+    logger.debug('matchedScript', matchedScript, transcript)
+    if (hasInputFocus && matchedScript !== transcript) {
+      videoRef.current.pause()
+      return
+    }
     updateTranscript(matchedScript)
   }
   const handleToggleVideo = () => {
