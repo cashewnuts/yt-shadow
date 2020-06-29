@@ -48,6 +48,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
         }
         logger.debug('xml', xml)
         const srt = new SRT(xml)
+        onSRTLoaded(srt)
         const host = window.location.host
         const transcripts = srt.texts.map(
           (t) =>
@@ -68,7 +69,6 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
         logger.debug('result: bulkUpsert', resultUpsert)
         const result = await dbMessageService?.get(host, videoId)
         logger.debug('result: get', result)
-        onSRTLoaded(srt)
       } catch (err) {
         if (onError) {
           onError(err)

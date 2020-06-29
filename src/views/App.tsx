@@ -37,7 +37,7 @@ const styles: { [key: string]: CSSProperties } = {
     justifyContent: 'center',
   },
   playerContainer: {
-    width: '8em',
+    width: '10em',
     flexShrink: 1,
   },
   userInputContainer: {
@@ -65,9 +65,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   }>()
   const [appState, setAppState] = useState<{
     pauseTimeoutId: number | null
+    waitMillisec: number
     srtGrainSize: SRTPropName
   }>({
     pauseTimeoutId: null,
+    waitMillisec: 100,
     srtGrainSize: SRTPropName.texts,
   })
   const [transcript, setTranscript] = useState<SRTMeasure>()
@@ -77,6 +79,7 @@ const App = (props: PropsWithChildren<unknown>) => {
   const clearPauseTimeoutId = () => {
     setAppState({
       ...appState,
+      waitMillisec: 100,
       pauseTimeoutId: null,
     })
   }
@@ -99,9 +102,12 @@ const App = (props: PropsWithChildren<unknown>) => {
     logger.debug('matchedScript', matchedScript, transcript)
     if (matchedScript !== transcript) {
       updateTranscript(matchedScript)
-    } else {
-      clearPauseTimeoutId()
+      setAppState({
+        ...appState,
+        waitMillisec: 500,
+      })
     }
+    clearPauseTimeoutId()
   }
   const updateVideoId = () => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -123,6 +129,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleSubtitleLoaded = (srt: SRT) => {
     logger.debug('onSRTLoaded', srt, videoRef)
     srtRef.current = srt
+    checkUpdateIsAds()
+    setAppState({
+      ...appState,
+      waitMillisec: 500,
+    })
     checkUpdateIsAds()
   }
   const handleError = (err: Error) => {
@@ -146,7 +157,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     if (hasInputFocus && matchedScript !== transcript) {
       const timeoutId = window.setTimeout(() => {
         videoRef.current?.pause()
-      }, 200)
+      }, appState.waitMillisec)
       setAppState({
         ...appState,
         pauseTimeoutId: timeoutId,
@@ -156,11 +167,11 @@ const App = (props: PropsWithChildren<unknown>) => {
       clearPauseTimeoutId()
     }
   }
-  const handleToggleVideo = () => {
+  const handleToggleOnVideoPlayer = () => {
     const video = videoRef.current
     if (!video) return
 
-    logger.debug('handleToggleVideo')
+    logger.debug('handleToggleOnVideoPlayer')
     incrementOrClearTranscript()
     if (video.paused) {
       video.play()
@@ -168,8 +179,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       video.pause()
     }
   }
-  const handleVideoStateChange = (bool: boolean) => () => {
-    logger.debug('handleVideoStateChange')
+  const handlePlayPauseOnTranscriptWriter = (bool: boolean) => () => {
+    logger.debug('handlePlayPauseOnTranscriptWriter')
     incrementOrClearTranscript()
     if (bool) {
       videoRef.current?.play()
@@ -218,7 +229,11 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleRepeatVideo = () => {
     if (transcript && videoRef.current) {
       clearPauseTimeoutId()
-      videoRef.current.currentTime = transcript.start
+      setAppState({
+        ...appState,
+        waitMillisec: 500,
+      })
+      videoRef.current.currentTime = transcript.start - 0.5
       videoRef.current.play()
     }
   }
@@ -237,13 +252,14 @@ const App = (props: PropsWithChildren<unknown>) => {
           <div style={styles.playerContainer}>
             <YoutubeVideo
               onLoaded={({ video }) => (videoRef.current = video)}
-              onPause={() => logger.debug('onPause')}
+              onPause={() => clearPauseTimeoutId()}
+              onPlay={() => clearPauseTimeoutId()}
               onTimeUpdate={handleTimeUpdate}
               onLoadStart={handleLoadStart}
               render={(video) => (
                 <VideoPlayer
                   video={video}
-                  onToggle={handleToggleVideo}
+                  onToggle={handleToggleOnVideoPlayer}
                   onRangeOpen={handleRangeOpen}
                   onRepeat={handleRepeatVideo}
                   onNext={handleNextPrevTranscript(1)}
@@ -283,8 +299,8 @@ const App = (props: PropsWithChildren<unknown>) => {
               inputRef={inputRef}
               onFocus={(focus) => setInputFocus(focus)}
               onRangeOpen={handleRangeOpen}
-              onPlay={handleVideoStateChange(true)}
-              onPause={handleVideoStateChange(false)}
+              onPlay={handlePlayPauseOnTranscriptWriter(true)}
+              onPause={handlePlayPauseOnTranscriptWriter(false)}
               onRepeat={handleRepeatVideo}
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
