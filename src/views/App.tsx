@@ -63,19 +63,45 @@ const App = (props: PropsWithChildren<unknown>) => {
     start: number
     end: number
   }>()
+  const [appState, setAppState] = useState<{
+    pauseTimeoutId: number | null
+    srtGrainSize: SRTPropName
+  }>({
+    pauseTimeoutId: null,
+    srtGrainSize: SRTPropName.texts,
+  })
   const [transcript, setTranscript] = useState<SRTMeasure>()
   const [rangeOpen, setRangeOpen] = useState(false)
   const [hasInputFocus, setInputFocus] = useState(false)
-  const [srtGrainSize, setSrtGrainSize] = useState<SRTPropName>(
-    SRTPropName.texts
-  )
 
+  const clearPauseTimeoutId = () => {
+    setAppState({
+      ...appState,
+      pauseTimeoutId: null,
+    })
+  }
   const updateTranscript = (text: SRTMeasure) => {
     setScriptRange({
       start: text.start,
       end: text.start + text.dur,
     })
     setTranscript(text)
+  }
+  const incrementOrClearTranscript = () => {
+    if (!videoRef.current || !srtRef.current) return
+    const srt = srtRef.current
+    const prop = srt[appState.srtGrainSize]
+    const currentTime = videoRef.current.currentTime
+    const matchedScript = (prop as Array<SRTMeasure>).find(
+      (t) => t.start <= currentTime && currentTime < t.start + t.dur
+    )
+    if (!matchedScript) return
+    logger.debug('matchedScript', matchedScript, transcript)
+    if (matchedScript !== transcript) {
+      updateTranscript(matchedScript)
+    } else {
+      clearPauseTimeoutId()
+    }
   }
   const updateVideoId = () => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -111,21 +137,31 @@ const App = (props: PropsWithChildren<unknown>) => {
     if (!videoRef.current || !srtRef.current) return
     const { currentTime } = videoRef.current
     const srt = srtRef.current
-    const prop = srt[srtGrainSize]
+    const prop = srt[appState.srtGrainSize]
     const matchedScript = (prop as Array<SRTMeasure>).find(
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
-    if (!matchedScript) return
-    logger.debug('matchedScript', matchedScript, transcript)
+    logger.debug('pauseTimeoutId', appState.pauseTimeoutId)
+    if (!matchedScript || appState.pauseTimeoutId) return
     if (hasInputFocus && matchedScript !== transcript) {
-      videoRef.current.pause()
-      return
+      const timeoutId = window.setTimeout(() => {
+        videoRef.current?.pause()
+      }, 200)
+      setAppState({
+        ...appState,
+        pauseTimeoutId: timeoutId,
+      })
+    } else {
+      updateTranscript(matchedScript)
+      clearPauseTimeoutId()
     }
-    updateTranscript(matchedScript)
   }
   const handleToggleVideo = () => {
     const video = videoRef.current
     if (!video) return
+
+    logger.debug('handleToggleVideo')
+    incrementOrClearTranscript()
     if (video.paused) {
       video.play()
     } else {
@@ -133,6 +169,8 @@ const App = (props: PropsWithChildren<unknown>) => {
     }
   }
   const handleVideoStateChange = (bool: boolean) => () => {
+    logger.debug('handleVideoStateChange')
+    incrementOrClearTranscript()
     if (bool) {
       videoRef.current?.play()
     } else {
@@ -148,12 +186,15 @@ const App = (props: PropsWithChildren<unknown>) => {
       const srt = srtRef.current
       const video = videoRef.current
       const idx =
-        srt[srtGrainSize].findIndex(
+        srt[appState.srtGrainSize].findIndex(
           (measure: SRTMeasure) => video.currentTime < measure.start
         ) - 1
       logger.debug('next or prev', idx)
-      const currentParagraph = srt[srtGrainSize][idx]
-      const matchedParagraph = srt[srtGrainSize][idx + crement]
+      const timeoutOffset = appState.pauseTimeoutId ? 1 : 0
+      clearPauseTimeoutId()
+      const currentParagraph = srt[appState.srtGrainSize][idx - timeoutOffset]
+      const matchedParagraph =
+        srt[appState.srtGrainSize][idx + crement - timeoutOffset]
       if (
         crement === -1 &&
         Math.abs(currentParagraph.start - video.currentTime) > 0.5
@@ -176,7 +217,9 @@ const App = (props: PropsWithChildren<unknown>) => {
   }
   const handleRepeatVideo = () => {
     if (transcript && videoRef.current) {
+      clearPauseTimeoutId()
       videoRef.current.currentTime = transcript.start
+      videoRef.current.play()
     }
   }
   return (
