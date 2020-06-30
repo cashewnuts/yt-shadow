@@ -13,6 +13,7 @@ export interface ITranscript extends TranscriptIndex {
 }
 export interface TranscriptParam extends ITranscript {
   text: string
+  dur: number
 }
 
 export default class Transcript implements ITranscript {
@@ -32,7 +33,9 @@ export default class Transcript implements ITranscript {
   public static mergeObject(...transcripts: ITranscript[]) {
     const [first, ...rest] = transcripts
     const integerOrMax = (num?: number) =>
-      Number.isInteger(num) ? (num as number) : Number.MAX_SAFE_INTEGER
+      Number.isInteger(num as number)
+        ? (num as number)
+        : Number.MAX_SAFE_INTEGER
     return rest.reduce((prev, mergeObj) => {
       const createdAt =
         integerOrMax(prev.createdAt) < integerOrMax(mergeObj.createdAt)

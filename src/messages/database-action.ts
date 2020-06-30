@@ -22,6 +22,14 @@ export interface TranscriptGetAction extends TranscriptAction {
   value: {
     host: string
     videoId: string
+    start: number
+  }
+}
+export interface TranscriptGetAllAction extends TranscriptAction {
+  method: 'getAll'
+  value: {
+    host: string
+    videoId: string
   }
 }
 

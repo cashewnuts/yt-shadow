@@ -230,7 +230,10 @@ const App = (props: PropsWithChildren<unknown>) => {
     }
     try {
       const result = await dbMessageService?.patch(patchTranscript)
-      logger.info('dbMessageService.patch for input', result)
+      logger.info('dbMessageService.patch for input', {
+        patchTranscript,
+        result,
+      })
     } catch (err) {
       logger.error('dbMessageService.patch for input', err)
     }
@@ -308,6 +311,7 @@ const App = (props: PropsWithChildren<unknown>) => {
             />
             <TranscriptWriter
               text={transcript}
+              videoId={videoId}
               inputRef={inputRef}
               onFocus={(focus) => setInputFocus(focus)}
               onRangeOpen={handleRangeOpen}

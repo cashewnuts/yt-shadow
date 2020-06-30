@@ -57,11 +57,12 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
               videoId,
               start: t.start,
               text: t.text,
+              dur: t.dur,
             })
         )
         const resultUpsert = await dbMessageService?.bulkUpsert(transcripts)
         logger.debug('result: bulkUpsert', resultUpsert)
-        const result = await dbMessageService?.get(host, videoId)
+        const result = await dbMessageService?.getAll(host, videoId)
         logger.debug('result: get', result)
       } catch (err) {
         if (onError) {

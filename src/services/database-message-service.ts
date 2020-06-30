@@ -2,8 +2,9 @@ import {
   TranscriptBulkUpsertAction,
   DatabaseAction,
   ConnectionMessage,
-  TranscriptGetAction,
+  TranscriptGetAllAction,
   TranscriptPatchAction,
+  TranscriptGetAction,
 } from '@/messages'
 import { ITranscript } from '@/models/transcript'
 import {
@@ -43,11 +44,23 @@ export default class DatabaseMessageService {
     return this.postMessage<TranscriptBulkUpsertAction, boolean>(action)
   }
 
-  async get(host: string, videoId: string) {
-    return this.postMessage<TranscriptGetAction, boolean>({
+  async get(host: string, videoId: string, start: number) {
+    return this.postMessage<TranscriptGetAction, ITranscript>({
       action: 'database',
       table: 'transcripts',
       method: 'get',
+      value: {
+        host,
+        videoId,
+        start,
+      },
+    })
+  }
+  async getAll(host: string, videoId: string) {
+    return this.postMessage<TranscriptGetAllAction, boolean>({
+      action: 'database',
+      table: 'transcripts',
+      method: 'getAll',
       value: {
         host,
         videoId,
