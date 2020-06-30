@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   DatabaseAction,
   Message,
   TranscriptBulkUpsertAction,
   TranscriptGetAction,
+  TranscriptPatchAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -24,6 +26,11 @@ export function instanceOfTranscriptGetAction(
   object: any
 ): object is TranscriptGetAction {
   return instanceOfDatabaseAction(object) && object.method === 'get'
+}
+export function instanceOfTranscriptPatchAction(
+  object: any
+): object is TranscriptPatchAction {
+  return instanceOfDatabaseAction(object) && object.method === 'patch'
 }
 
 export function instanceOfMessage(object: any): object is Message {

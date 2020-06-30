@@ -33,7 +33,7 @@ export interface TranscriptWriterProps {
   onRangeOpen?: () => void
   onFocus?: (focus: boolean) => void
   onInput?: (value: string) => void
-  onCheckAnswer?: (isCorrect: boolean) => void
+  onCheckAnswer?: (text: SRTMeasure, isCorrect: boolean) => void
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -332,19 +332,27 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       show: true,
       correct,
     })
-    props.onCheckAnswer?.call(null, correct)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAnswer]) // wordProcessors
+    if (text) {
+      props.onCheckAnswer?.call(null, text, correct)
+    }
+  }, [showAnswer, text, wordProcessors, props.onCheckAnswer]) // wordProcessors
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
       str = wordProcessor.input(str)
     }
     setWordProcessors(wordProcessors)
-    const answerText = wordProcessors.map((wp) => wp.answerText).join(' ')
+    const answerText = wordProcessors
+      .map((wp) => wp.answerText)
+      .join(' ')
+      .trim()
     props.onInput?.call(null, answerText)
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
+    if (showAnswer && text) {
+      const correct = wordProcessors.every((wp) => wp.isCorrect)
+      props.onCheckAnswer?.call(null, text, correct)
+    }
   }
   const changeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target

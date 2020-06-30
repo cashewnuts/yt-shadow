@@ -3,6 +3,7 @@ import {
   DatabaseAction,
   ConnectionMessage,
   TranscriptGetAction,
+  TranscriptPatchAction,
 } from '@/messages'
 import { ITranscript } from '@/models/transcript'
 import {
@@ -10,6 +11,7 @@ import {
   instanceOfMessage,
 } from '@/helpers/message-helper'
 import { createLogger } from '@/helpers/logger'
+import { TranscriptIndex } from '@/storages/shadowing-db'
 const logger = createLogger('database-message-service.ts')
 
 export default class DatabaseMessageService {
@@ -49,6 +51,16 @@ export default class DatabaseMessageService {
       value: {
         host,
         videoId,
+      },
+    })
+  }
+  async patch(transcript: ITranscript) {
+    return this.postMessage<TranscriptPatchAction, TranscriptIndex>({
+      action: 'database',
+      table: 'transcripts',
+      method: 'patch',
+      value: {
+        value: transcript,
       },
     })
   }
