@@ -11,11 +11,10 @@ import Spinner from './components/Spinner'
 import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
-import TranscriptWriter from './components/TranscriptWriter'
+import TranscriptWriter, { onInputType } from './components/TranscriptWriter'
 import { AppContextConsumer, AppContext } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
-import Transcript from '@/models/transcript'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -220,32 +219,20 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
-  const handleTranscriptInput = async (str: string) => {
-    logger.debug('handleTranscriptInput', str)
+  const handleTranscriptInput = async (value: onInputType) => {
+    logger.debug('handleTranscriptInput', value)
     if (!transcript || !videoId) return
-    const patchTranscript = new Transcript({
+    const patchTranscript = {
       host: window.location.host,
       videoId,
       start: transcript.start,
-      text: transcript.text,
-      answer: str,
-    })
+      ...value,
+    }
     try {
       const result = await dbMessageService?.patch(patchTranscript)
       logger.info('dbMessageService.patch for input', result)
     } catch (err) {
       logger.error('dbMessageService.patch for input', err)
-    }
-  }
-  const handleTranscriptCheckAnswer = async (
-    text: SRTMeasure,
-    bool: boolean
-  ) => {
-    logger.debug('handleTranscriptCheckAnswer', text, bool)
-    try {
-      // await dbMessageService?.patch()
-    } catch (err) {
-      logger.error('dbMessageService.patch for checkAnswer', err)
     }
   }
   const handleClickWrapper = () => {
@@ -330,7 +317,6 @@ const App = (props: PropsWithChildren<unknown>) => {
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
-              onCheckAnswer={handleTranscriptCheckAnswer}
             />
           </div>
         </div>

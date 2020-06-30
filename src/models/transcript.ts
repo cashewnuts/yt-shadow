@@ -2,7 +2,7 @@ import { TranscriptIndex } from '@/storages/shadowing-db'
 import { splitTextIntoWords } from '@/helpers/text-helper'
 
 export interface ITranscript extends TranscriptIndex {
-  text: string
+  text?: string
   dur?: number
   answer?: string
   done?: boolean
@@ -10,6 +10,9 @@ export interface ITranscript extends TranscriptIndex {
   correct?: boolean
   createdAt?: number
   updatedAt?: number
+}
+export interface TranscriptParam extends ITranscript {
+  text: string
 }
 
 export default class Transcript implements ITranscript {
@@ -43,7 +46,7 @@ export default class Transcript implements ITranscript {
     }, first)
   }
 
-  constructor(params: ITranscript) {
+  constructor(params: TranscriptParam) {
     const {
       host,
       videoId,
