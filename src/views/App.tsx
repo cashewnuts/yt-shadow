@@ -228,12 +228,12 @@ const App = (props: PropsWithChildren<unknown>) => {
   }
   const handleRepeatVideo = () => {
     if (transcript && videoRef.current) {
-      clearPauseTimeoutId()
       setAppState({
         ...appState,
         waitMillisec: 500,
+        pauseTimeoutId: null,
       })
-      videoRef.current.currentTime = transcript.start - 0.5
+      videoRef.current.currentTime = transcript.start
       videoRef.current.play()
     }
   }
