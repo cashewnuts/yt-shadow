@@ -24,3 +24,10 @@ export interface TranscriptGetAction extends TranscriptAction {
     videoId: string
   }
 }
+
+export interface TranscriptPatchAction extends TranscriptAction {
+  method: 'patch'
+  value: {
+    value: ITranscript
+  }
+}

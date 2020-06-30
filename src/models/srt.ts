@@ -1,4 +1,8 @@
-import { checkBePunctuated, checkSpokenText } from '../helpers/text-helper'
+import {
+  checkBePunctuated,
+  checkSpokenText,
+  splitTextIntoWords,
+} from '../helpers/text-helper'
 import { decode } from 'entities'
 
 export interface SRTMeasure {
@@ -44,9 +48,7 @@ export default class SRT {
           return undefined
         }
         const text = decode(rawText)
-        const words = text.split(/\s|\rn/).map((word: string) => {
-          return (word + '').trim()
-        })
+        const words = splitTextIntoWords(text)
         const done = checkBePunctuated(text)
         const spoken = checkSpokenText(text)
         return {

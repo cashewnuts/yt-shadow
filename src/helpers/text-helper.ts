@@ -23,3 +23,12 @@ export const countSpokenChar = (str: string) => {
   const re = new RegExp(`[${escapeRegExp(SYMBOLS)}]`, 'g')
   return ((str || '').match(re) || []).length
 }
+
+export const splitTextIntoWords = (str: string) => {
+  return str
+    .split(/\s|\rn/)
+    .map((word: string) => {
+      return (word + '').trim()
+    })
+    .filter(Boolean)
+}

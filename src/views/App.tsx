@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useContext,
 } from 'react'
 import SubtitleLoader from './components/SubtitleLoader'
 import Spinner from './components/Spinner'
@@ -11,9 +12,10 @@ import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter from './components/TranscriptWriter'
-import { AppContextConsumer } from '../contexts/AppContext'
+import { AppContextConsumer, AppContext } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
+import Transcript from '@/models/transcript'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -54,6 +56,7 @@ enum SRTPropName {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
+  const { dbMessageService } = useContext(AppContext)
   const [videoId, setVideoId] = useState<string>()
   const srtRef = useRef<SRT>()
   const videoRef = useRef<HTMLVideoElement>()
@@ -217,11 +220,33 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
-  const handleTranscriptInput = (str: string) => {
+  const handleTranscriptInput = async (str: string) => {
     logger.debug('handleTranscriptInput', str)
+    if (!transcript || !videoId) return
+    const patchTranscript = new Transcript({
+      host: window.location.host,
+      videoId,
+      start: transcript.start,
+      text: transcript.text,
+      answer: str,
+    })
+    try {
+      const result = await dbMessageService?.patch(patchTranscript)
+      logger.info('dbMessageService.patch for input', result)
+    } catch (err) {
+      logger.error('dbMessageService.patch for input', err)
+    }
   }
-  const handleTranscriptCheckAnswer = (bool: boolean) => {
-    logger.debug('handleTranscriptCheckAnswer', bool)
+  const handleTranscriptCheckAnswer = async (
+    text: SRTMeasure,
+    bool: boolean
+  ) => {
+    logger.debug('handleTranscriptCheckAnswer', text, bool)
+    try {
+      // await dbMessageService?.patch()
+    } catch (err) {
+      logger.error('dbMessageService.patch for checkAnswer', err)
+    }
   }
   const handleClickWrapper = () => {
     inputRef.current?.focus()
