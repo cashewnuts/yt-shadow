@@ -20,7 +20,8 @@ import {
 import { AppContext } from '@/contexts/AppContext'
 import CheckAnimation from './CheckAnimation'
 import { checkSpokenChar, WHITE_SPACE } from '@/helpers/text-helper'
-import { logger } from '@/helpers/logger'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('TranscriptWriter.tsx')
 
 export type onInputType = {
   answer: string
@@ -29,6 +30,7 @@ export type onInputType = {
 }
 export interface TranscriptWriterProps {
   text?: SRTMeasure
+  videoId?: string
   inputRef: MutableRefObject<HTMLInputElement | null>
   onPlay?: () => void
   onPause?: () => void
@@ -298,7 +300,7 @@ class WordProcessor {
 }
 
 const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
-  const { text, inputRef } = props
+  const { text, videoId, inputRef } = props
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
   const [showAnswer, setShowAnswer] = useState(false)
@@ -310,7 +312,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const [wordProcessors, setWordProcessors] = useState(
     text ? text.words.map((w) => new WordProcessor(w)) : []
   )
-  const { focus, setFocus } = useContext(AppContext)
+  const { focus, setFocus, dbMessageService } = useContext(AppContext)
 
   const emitOnInput = () => {
     const answer = wordProcessors
@@ -326,14 +328,53 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   }
   useEffect(() => {
     if (!text) return
-    setWordProcessors(text.words.map((w) => new WordProcessor(w)))
-    setInputValue('')
-    setShowAnswer(false)
-    setShowDiff(false)
-    setResult({
-      show: false,
-      correct: false,
-    })
+    const wordProcessors = text.words.map((w) => new WordProcessor(w))
+    const asyncFn = async () => {
+      if (!videoId) return
+      try {
+        const transcript = await dbMessageService?.get(
+          window.location.host,
+          videoId,
+          text.start
+        )
+        logger.debug('dbMessageService.get', transcript)
+        if (transcript && transcript.answer) {
+          const answer = transcript.answer || ''
+          let str = answer
+          for (const wordProcessor of wordProcessors) {
+            str = wordProcessor.input(str)
+          }
+          setWordProcessors(wordProcessors)
+          setInputValue(answer)
+          setShowAnswer(false)
+          setShowDiff(false)
+          setResult({
+            show: transcript.done || false,
+            correct: transcript.correct || false,
+          })
+        } else {
+          setWordProcessors(wordProcessors)
+          setInputValue('')
+          setShowAnswer(false)
+          setShowDiff(false)
+          setResult({
+            show: false,
+            correct: false,
+          })
+        }
+      } catch (err) {
+        setWordProcessors(wordProcessors)
+        setInputValue('')
+        setShowAnswer(false)
+        setShowDiff(false)
+        setResult({
+          show: false,
+          correct: false,
+        })
+        logger.error(err)
+      }
+    }
+    asyncFn()
   }, [text])
   useEffect(() => {
     if (!showAnswer) {
@@ -421,11 +462,11 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       stopPrevents()
       props.onNext?.call(null)
     }
-    if (key === 'u' && ctrlKey) {
+    if ((key === 'u' || key === 'r') && ctrlKey) {
       stopPrevents()
       props.onRepeat?.call(null)
     }
-    if ((key === 'o' || key === 'r') && ctrlKey) {
+    if (key === 'o' && ctrlKey) {
       stopPrevents()
       setShowAnswer(!showAnswer)
     }

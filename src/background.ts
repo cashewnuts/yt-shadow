@@ -5,8 +5,9 @@ import {
   instanceOfDatabaseAction,
   instanceOfTranscriptBulkUpsertAction,
   instanceOfMessage,
-  instanceOfTranscriptGetAction,
+  instanceOfTranscriptGetAllAction,
   instanceOfTranscriptPatchAction,
+  instanceOfTranscriptGetAction,
 } from './helpers/message-helper'
 import { db } from './storages/shadowing-db'
 import { createLogger } from './helpers/logger'
@@ -62,9 +63,27 @@ async function databaseActionHandler(
   } else if (instanceOfTranscriptGetAction(action)) {
     let result = null
     try {
+      const { host, videoId, start } = action.value
+      logger.debug('get', host, videoId, start)
+      result = await db.transcripts.get({ host, videoId, start })
+    } catch (err) {
+      result = err
+      logger.error(err)
+    }
+    logger.info('result get', result)
+    port.postMessage({
+      action: action.action,
+      table: action.table,
+      method: action.method,
+      value: result,
+    })
+  } else if (instanceOfTranscriptGetAllAction(action)) {
+    let result = null
+    try {
       const { host, videoId } = action.value
-      logger.debug('get', host, videoId)
+      logger.debug('getAll', host, videoId)
       result = await db.transcripts.where({ host, videoId }).sortBy('start')
+      logger.info('result getAll', result)
     } catch (err) {
       result = err
       logger.error(err)
@@ -89,7 +108,9 @@ async function databaseActionHandler(
           createdAt,
           updatedAt: Date.now(),
         }
+        logger.debug('patch', mergedObj)
         result = await db.transcripts.put(mergedObj)
+        logger.info('patch', result)
       } else {
         result = await db.transcripts.put({ ...value, updatedAt: Date.now() })
       }

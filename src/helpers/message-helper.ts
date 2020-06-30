@@ -3,8 +3,9 @@ import {
   DatabaseAction,
   Message,
   TranscriptBulkUpsertAction,
-  TranscriptGetAction,
+  TranscriptGetAllAction,
   TranscriptPatchAction,
+  TranscriptGetAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -26,6 +27,11 @@ export function instanceOfTranscriptGetAction(
   object: any
 ): object is TranscriptGetAction {
   return instanceOfDatabaseAction(object) && object.method === 'get'
+}
+export function instanceOfTranscriptGetAllAction(
+  object: any
+): object is TranscriptGetAllAction {
+  return instanceOfDatabaseAction(object) && object.method === 'getAll'
 }
 export function instanceOfTranscriptPatchAction(
   object: any
