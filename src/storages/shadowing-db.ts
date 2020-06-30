@@ -1,7 +1,8 @@
 import Dexie from 'dexie'
+import { ITranscript } from '@/models/transcript'
 
 export default class ShadowingDatabase extends Dexie {
-  transcripts: Dexie.Table<TranscriptIndex, string>
+  transcripts: Dexie.Table<ITranscript, TranscriptIndex>
 
   constructor() {
     super('ShadowingDatabase')

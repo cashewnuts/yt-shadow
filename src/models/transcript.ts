@@ -26,6 +26,23 @@ export default class Transcript implements ITranscript {
   public createdAt: number
   public updatedAt: number
 
+  public static mergeObject(...transcripts: ITranscript[]) {
+    const [first, ...rest] = transcripts
+    const integerOrMax = (num?: number) =>
+      Number.isInteger(num) ? (num as number) : Number.MAX_SAFE_INTEGER
+    return rest.reduce((prev, mergeObj) => {
+      const createdAt =
+        integerOrMax(prev.createdAt) < integerOrMax(mergeObj.createdAt)
+          ? prev.createdAt
+          : mergeObj.createdAt
+      return {
+        ...mergeObj,
+        ...prev,
+        createdAt,
+      }
+    }, first)
+  }
+
   constructor(params: ITranscript) {
     const {
       host,
