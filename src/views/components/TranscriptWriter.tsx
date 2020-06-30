@@ -22,6 +22,11 @@ import CheckAnimation from './CheckAnimation'
 import { checkSpokenChar, WHITE_SPACE } from '@/helpers/text-helper'
 import { logger } from '@/helpers/logger'
 
+export type onInputType = {
+  answer: string
+  done: boolean
+  correct: boolean
+}
 export interface TranscriptWriterProps {
   text?: SRTMeasure
   inputRef: MutableRefObject<HTMLInputElement | null>
@@ -32,8 +37,7 @@ export interface TranscriptWriterProps {
   onRepeat?: () => void
   onRangeOpen?: () => void
   onFocus?: (focus: boolean) => void
-  onInput?: (value: string) => void
-  onCheckAnswer?: (text: SRTMeasure, isCorrect: boolean) => void
+  onInput?: (value: onInputType) => void
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -308,6 +312,18 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   )
   const { focus, setFocus } = useContext(AppContext)
 
+  const emitOnInput = () => {
+    const answer = wordProcessors
+      .map((wp) => wp.answerText)
+      .join(' ')
+      .trim()
+    const correct = wordProcessors.every((wp) => wp.isCorrect)
+    props.onInput?.call(null, {
+      answer,
+      done: showAnswer || false,
+      correct,
+    })
+  }
   useEffect(() => {
     if (!text) return
     setWordProcessors(text.words.map((w) => new WordProcessor(w)))
@@ -333,25 +349,20 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       correct,
     })
     if (text) {
-      props.onCheckAnswer?.call(null, text, correct)
+      emitOnInput()
     }
-  }, [showAnswer, text, wordProcessors, props.onCheckAnswer]) // wordProcessors
+  }, [showAnswer, text, wordProcessors]) // wordProcessors
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
       str = wordProcessor.input(str)
     }
     setWordProcessors(wordProcessors)
-    const answerText = wordProcessors
-      .map((wp) => wp.answerText)
-      .join(' ')
-      .trim()
-    props.onInput?.call(null, answerText)
+    emitOnInput()
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
     if (showAnswer && text) {
-      const correct = wordProcessors.every((wp) => wp.isCorrect)
-      props.onCheckAnswer?.call(null, text, correct)
+      emitOnInput()
     }
   }
   const changeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
@@ -414,7 +425,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       stopPrevents()
       props.onRepeat?.call(null)
     }
-    if (key === 'o' && ctrlKey) {
+    if ((key === 'o' || key === 'r') && ctrlKey) {
       stopPrevents()
       setShowAnswer(!showAnswer)
     }
