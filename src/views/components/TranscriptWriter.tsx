@@ -304,7 +304,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const { text, videoId, inputRef } = props
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
-  const [showAnswer, setShowAnswer] = useState(false)
   const [showDiff, setShowDiff] = useState(false)
   const [result, setResult] = useState({
     show: false,
@@ -324,7 +323,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     const correct = wordProcessors.every((wp) => wp.isCorrect)
     props.onInput?.call(null, {
       answer,
-      done: showAnswer || false,
+      done: result.show || false,
       correct,
     })
   }
@@ -348,7 +347,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           }
           setWordProcessors(wordProcessors)
           setInputValue(answer)
-          setShowAnswer(false)
           setShowDiff(false)
           setResult({
             show: transcript.done || false,
@@ -357,7 +355,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         } else {
           setWordProcessors(wordProcessors)
           setInputValue('')
-          setShowAnswer(false)
           setShowDiff(false)
           setResult({
             show: false,
@@ -367,7 +364,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       } catch (err) {
         setWordProcessors(wordProcessors)
         setInputValue('')
-        setShowAnswer(false)
         setShowDiff(false)
         setResult({
           show: false,
@@ -379,7 +375,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     asyncFn()
   }, [text])
   useEffect(() => {
-    if (!showAnswer) {
+    if (!result.show) {
       setResult({
         show: false,
         correct: false,
@@ -394,7 +390,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     if (text) {
       emitOnInput()
     }
-  }, [showAnswer, text, wordProcessors]) // wordProcessors
+  }, [result.show, text, wordProcessors]) // wordProcessors
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
@@ -404,7 +400,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     emitOnInput()
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
-    if (showAnswer && text) {
+    if (result.show && text) {
       emitOnInput()
     }
   }
@@ -412,7 +408,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     const { value } = event.target
     updateWordProcessorInput(value)
     setInputValue(value)
-    if (showAnswer) {
+    if (result.show) {
       const correct = wordProcessors.every((wp) => wp.isCorrect)
       setResult({
         ...result,
@@ -470,23 +466,32 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     }
     if (key === 'o' && ctrlKey) {
       stopPrevents()
-      setShowAnswer(!showAnswer)
+      setResult({
+        ...result,
+        show: !result.show,
+      })
     }
     if (inputEnded) {
       if (key === 'Enter' && ctrlKey) {
-        setShowAnswer(!showAnswer)
+        setResult({
+          ...result,
+          show: !result.show,
+        })
       }
     }
   }
   const showAnswerClickHandler = () => {
-    setShowAnswer(!showAnswer)
+    setResult({
+      ...result,
+      show: !result.show,
+    })
   }
   const inputSetFocusHandler = (bool: boolean) => () => {
     setFocus(bool)
     props.onFocus?.call(null, bool)
   }
   const handleParagraphClick = (event: SyntheticEvent<HTMLElement>) => {
-    if (showAnswer) {
+    if (result.show) {
       event.stopPropagation()
     }
   }
@@ -511,11 +516,11 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       </div>
       <div css={styles.paragraphContainer}>
         <p css={styles.paragraph} onClick={handleParagraphClick}>
-          {(inputValue || showAnswer || true) &&
+          {(inputValue || result.show || true) &&
             wordProcessors.map((wp) => (
               <span css={styles.word} key={wp.key}>
-                {showAnswer && (showDiff ? wp.renderDiff : wp.renderAnswer)}
-                {!showAnswer && wp.render}
+                {result.show && (showDiff ? wp.renderDiff : wp.renderAnswer)}
+                {!result.show && wp.render}
               </span>
             ))}
         </p>
