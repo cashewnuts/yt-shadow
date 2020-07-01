@@ -6,9 +6,9 @@ import React, {
 } from 'react'
 import { parseStringPromise } from 'xml2js'
 import SRT from '../../models/srt'
-import { AppContext } from '@/contexts/AppContext'
 import Transcript from '@/models/transcript'
 import { createLogger } from '@/helpers/logger'
+import { MessageContext } from '@/contexts/MessageContext'
 const logger = createLogger('SubtitleLoader.tsx')
 
 export interface SubtitleLoaderProps {
@@ -26,7 +26,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
   const { videoId, onSRTLoaded, onError } = props
-  const { dbMessageService } = useContext(AppContext)
+  const { dbMessageService } = useContext(MessageContext)
 
   useEffect(() => {
     const asyncFn = async () => {

@@ -12,9 +12,10 @@ import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter, { onInputType } from './components/TranscriptWriter'
-import { AppContextConsumer, AppContext } from '../contexts/AppContext'
+import { AppContextConsumer } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
+import { MessageContext } from '@/contexts/MessageContext'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -55,7 +56,7 @@ enum SRTPropName {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
-  const { dbMessageService } = useContext(AppContext)
+  const { dbMessageService } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
   const srtRef = useRef<SRT>()
   const videoRef = useRef<HTMLVideoElement>()
