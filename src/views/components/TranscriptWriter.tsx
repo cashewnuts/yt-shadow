@@ -448,21 +448,17 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       stopPrevents()
       props.onRepeat?.call(null)
     }
-    if (key === 'o' && ctrlKey) {
+    if (
+      (key === 'o' && ctrlKey) ||
+      (inputEnded && key === 'Enter' && ctrlKey)
+    ) {
       stopPrevents()
+      const correct = wordProcessors.every((wp) => wp.isCorrect)
       setResult({
         ...result,
+        correct,
         show: !result.show,
       })
-    }
-    if (inputEnded) {
-      if (key === 'Enter' && ctrlKey) {
-        stopPrevents()
-        setResult({
-          ...result,
-          show: !result.show,
-        })
-      }
     }
   }
   const showAnswerClickHandler = () => {
