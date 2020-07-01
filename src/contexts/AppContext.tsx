@@ -4,15 +4,16 @@ import React, {
   useState,
   Dispatch,
   SetStateAction,
+  memo,
 } from 'react'
-import DatabaseMessageService from '@/services/database-message-service'
 import { createLogger } from '@/helpers/logger'
+import { MessageContextProvider } from './MessageContext'
+const MemoinizedMessageContextProvider = memo(MessageContextProvider)
 const logger = createLogger('AppContext.tsx')
 
 export interface AppContextParams {
   focus: boolean
   setFocus: Dispatch<SetStateAction<boolean>>
-  dbMessageService?: DatabaseMessageService
 }
 
 export const AppContext = createContext<AppContextParams>({
@@ -22,15 +23,15 @@ export const AppContext = createContext<AppContextParams>({
 
 export const AppContextProvider = (props: PropsWithChildren<unknown>) => {
   const [focus, setFocus] = useState(false)
+  const value = {
+    focus,
+    setFocus,
+  }
   return (
-    <AppContext.Provider
-      value={{
-        focus,
-        setFocus,
-        dbMessageService: new DatabaseMessageService(),
-      }}
-    >
-      {props.children}
+    <AppContext.Provider value={value}>
+      <MemoinizedMessageContextProvider>
+        {props.children}
+      </MemoinizedMessageContextProvider>
     </AppContext.Provider>
   )
 }

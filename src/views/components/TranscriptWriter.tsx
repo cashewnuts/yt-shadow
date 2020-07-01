@@ -21,6 +21,7 @@ import { AppContext } from '@/contexts/AppContext'
 import CheckAnimation from './CheckAnimation'
 import { checkSpokenChar, WHITE_SPACE } from '@/helpers/text-helper'
 import { createLogger } from '@/helpers/logger'
+import { MessageContext } from '@/contexts/MessageContext'
 const logger = createLogger('TranscriptWriter.tsx')
 
 export type onInputType = {
@@ -312,7 +313,8 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const [wordProcessors, setWordProcessors] = useState(
     text ? text.words.map((w) => new WordProcessor(w)) : []
   )
-  const { focus, setFocus, dbMessageService } = useContext(AppContext)
+  const { setFocus } = useContext(AppContext)
+  const { dbMessageService } = useContext(MessageContext)
 
   const emitOnInput = () => {
     const answer = wordProcessors

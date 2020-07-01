@@ -1,13 +1,15 @@
-import React from 'react'
+import React, { memo } from 'react'
 import ReactDOM from 'react-dom'
 
 import App from './App'
 import { AppContextProvider } from '@/contexts/AppContext'
 
+const MemoizedApp = memo(App)
+
 export const render = (id: string) => {
   ReactDOM.render(
     <AppContextProvider>
-      <App />
+      <MemoizedApp />
     </AppContextProvider>,
     document.getElementById(id)
   )
