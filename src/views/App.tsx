@@ -147,7 +147,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     updateVideoId()
     checkUpdateIsAds()
   }
-  const handleTimeUpdate = () => {
+  const handleTimeUpdate = async () => {
     if (!videoRef.current || !srtRef.current) return
     const { currentTime } = videoRef.current
     const srt = srtRef.current
@@ -158,13 +158,36 @@ const App = (props: PropsWithChildren<unknown>) => {
     logger.debug('pauseTimeoutId', appState.pauseTimeoutId)
     if (!matchedScript || appState.pauseTimeoutId) return
     if (hasInputFocus && matchedScript !== transcript) {
-      const timeoutId = window.setTimeout(() => {
-        videoRef.current?.pause()
-      }, appState.waitMillisec)
+      // set dummy pauseTimeoutId
       setAppState({
         ...appState,
-        pauseTimeoutId: timeoutId,
+        pauseTimeoutId: 9999,
       })
+      let savedScript = null
+      try {
+        if (videoId && transcript && transcript.start) {
+          savedScript = await dbMessageService?.get(
+            window.location.host,
+            videoId,
+            transcript.start
+          )
+        }
+      } catch (err) {
+        logger.error(err)
+      }
+      logger.debug('savedScript', savedScript?.done, savedScript?.skip)
+      if (!savedScript || (!savedScript.done && !savedScript.skip)) {
+        const timeoutId = window.setTimeout(() => {
+          videoRef.current?.pause()
+        }, appState.waitMillisec)
+        setAppState({
+          ...appState,
+          pauseTimeoutId: timeoutId,
+        })
+      } else {
+        updateTranscript(matchedScript)
+        clearPauseTimeoutId()
+      }
     } else {
       updateTranscript(matchedScript)
       clearPauseTimeoutId()

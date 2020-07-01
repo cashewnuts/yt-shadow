@@ -8,6 +8,7 @@ import React, {
   useContext,
   MutableRefObject,
   SyntheticEvent,
+  useCallback,
 } from 'react'
 import { SRTMeasure } from '../../models/srt'
 import { v4 as uuidv4 } from 'uuid'
@@ -315,7 +316,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const { setFocus } = useContext(AppContext)
   const { dbMessageService } = useContext(MessageContext)
 
-  const emitOnInput = () => {
+  const emitOnInput = useCallback(() => {
     const answer = wordProcessors
       .map((wp) => wp.answerText)
       .join(' ')
@@ -326,7 +327,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       done: result.show || false,
       correct,
     })
-  }
+  }, [props.onInput?.call, result.show, wordProcessors])
   useEffect(() => {
     if (!text) return
     const wordProcessors = text.words.map((w) => new WordProcessor(w))
@@ -373,36 +374,19 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       }
     }
     asyncFn()
-  }, [text])
+  }, [dbMessageService?.get, text, videoId])
   useEffect(() => {
-    if (!result.show) {
-      setResult({
-        show: false,
-        correct: false,
-      })
-      return
-    }
-    const correct = wordProcessors.every((wp) => wp.isCorrect)
-    setResult({
-      show: true,
-      correct,
-    })
-    if (text) {
-      emitOnInput()
-    }
-  }, [result.show, text, wordProcessors]) // wordProcessors
+    emitOnInput()
+  }, [emitOnInput])
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
       str = wordProcessor.input(str)
     }
     setWordProcessors(wordProcessors)
-    emitOnInput()
     const inputEnded = wordProcessors.every((wp) => wp.end)
     setInputEnded(inputEnded)
-    if (result.show && text) {
-      emitOnInput()
-    }
+    emitOnInput()
   }
   const changeInputHandler = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target
@@ -473,6 +457,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     }
     if (inputEnded) {
       if (key === 'Enter' && ctrlKey) {
+        stopPrevents()
         setResult({
           ...result,
           show: !result.show,
