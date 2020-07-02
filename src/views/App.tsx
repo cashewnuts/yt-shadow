@@ -16,6 +16,7 @@ import { AppContextConsumer } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
+import TranscriptDetails from './components/TranscriptDetails'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -76,6 +77,14 @@ const App = (props: PropsWithChildren<unknown>) => {
     srtGrainSize: SRTPropName.texts,
   })
   const [transcript, setTranscript] = useState<SRTMeasure>()
+  const [transcriptState, setTranscriptState] = useState<{
+    text?: SRTMeasure
+    done: boolean
+    correct: boolean
+  }>({
+    done: false,
+    correct: false,
+  })
   const [rangeOpen, setRangeOpen] = useState(false)
   const [hasInputFocus, setInputFocus] = useState(false)
 
@@ -254,6 +263,11 @@ const App = (props: PropsWithChildren<unknown>) => {
     }
     try {
       const result = await dbMessageService?.patch(patchTranscript)
+      setTranscriptState({
+        text: transcript,
+        done: value.done,
+        correct: value.correct,
+      })
       logger.info('dbMessageService.patch for input', {
         patchTranscript,
         result,
@@ -345,7 +359,13 @@ const App = (props: PropsWithChildren<unknown>) => {
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
-            />
+            >
+              <TranscriptDetails
+                text={transcriptState.text}
+                videoId={videoId}
+                state={transcriptState}
+              />
+            </TranscriptWriter>
           </div>
         </div>
       )}

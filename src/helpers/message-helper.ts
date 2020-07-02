@@ -6,6 +6,7 @@ import {
   TranscriptGetAllAction,
   TranscriptPatchAction,
   TranscriptGetAction,
+  TranscriptFindAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -32,6 +33,11 @@ export function instanceOfTranscriptGetAllAction(
   object: any
 ): object is TranscriptGetAllAction {
   return instanceOfDatabaseAction(object) && object.method === 'getAll'
+}
+export function instanceOfTranscriptFindAction(
+  object: any
+): object is TranscriptFindAction {
+  return instanceOfDatabaseAction(object) && object.method === 'find'
 }
 export function instanceOfTranscriptPatchAction(
   object: any

@@ -32,6 +32,21 @@ export interface TranscriptGetAllAction extends TranscriptAction {
     videoId: string
   }
 }
+export interface TranscriptFindAction extends TranscriptAction {
+  method: 'find'
+  value: {
+    host: string
+    videoId: string
+    filters: {
+      [key: string]: unknown
+      done?: boolean
+      skip?: boolean
+      correct?: boolean
+      from?: number
+      to?: number
+    }
+  }
+}
 
 export interface TranscriptPatchAction extends TranscriptAction {
   method: 'patch'

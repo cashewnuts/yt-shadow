@@ -518,11 +518,14 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
             value={inputValue}
           />
         </div>
-        {text && (
-          <div>
-            <button onClick={showAnswerClickHandler}>Show Answer</button>
-          </div>
-        )}
+        <div style={{ width: '80%' }}>{props.children}</div>
+        <div style={{ width: '20%' }}>
+          {text && (
+            <div>
+              <button onClick={showAnswerClickHandler}>Show Answer</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

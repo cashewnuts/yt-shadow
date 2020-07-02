@@ -8,6 +8,7 @@ import {
   instanceOfTranscriptGetAllAction,
   instanceOfTranscriptPatchAction,
   instanceOfTranscriptGetAction,
+  instanceOfTranscriptFindAction,
 } from './helpers/message-helper'
 import { db } from './storages/shadowing-db'
 import { createLogger } from './helpers/logger'
@@ -84,6 +85,52 @@ async function databaseActionHandler(
       logger.debug('getAll', host, videoId)
       result = await db.transcripts.where({ host, videoId }).sortBy('start')
       logger.info('result getAll', result)
+    } catch (err) {
+      result = err
+      logger.error(err)
+    }
+    port.postMessage({
+      action: action.action,
+      table: action.table,
+      method: action.method,
+      value: result,
+    })
+  } else if (instanceOfTranscriptFindAction(action)) {
+    let result = null
+    try {
+      const { host, videoId, filters } = action.value
+      const filtersArr = Object.keys(filters)
+        .filter((key) => filters[key] !== undefined)
+        .map((key) => ({
+          prop: key,
+          value: filters[key],
+        }))
+      logger.debug('find', host, videoId, filters)
+      result = await db.transcripts
+        .where({ host, videoId })
+        .filter((transcript) => {
+          for (const filterItem of filtersArr) {
+            if (
+              filterItem.prop === 'from' &&
+              (filterItem.value as number) < transcript.start
+            ) {
+              return false
+            }
+            if (
+              filterItem.prop === 'to' &&
+              transcript.start < (filterItem.value as number)
+            ) {
+              return false
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (filterItem.value !== (transcript as any)[filterItem.prop]) {
+              return false
+            }
+          }
+          return true
+        })
+        .sortBy('start')
+      logger.info('result find', result)
     } catch (err) {
       result = err
       logger.error(err)
