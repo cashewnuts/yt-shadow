@@ -5,6 +5,7 @@ import {
   TranscriptGetAllAction,
   TranscriptPatchAction,
   TranscriptGetAction,
+  TranscriptFindAction,
 } from '@/messages'
 import { ITranscript } from '@/models/transcript'
 import {
@@ -57,13 +58,36 @@ export default class DatabaseMessageService {
     })
   }
   async getAll(host: string, videoId: string) {
-    return this.postMessage<TranscriptGetAllAction, boolean>({
+    return this.postMessage<TranscriptGetAllAction, ITranscript[]>({
       action: 'database',
       table: 'transcripts',
       method: 'getAll',
       value: {
         host,
         videoId,
+      },
+    })
+  }
+
+  async find(
+    host: string,
+    videoId: string,
+    filters: {
+      done?: boolean
+      skip?: boolean
+      correct?: boolean
+      from?: number
+      to?: number
+    }
+  ) {
+    return this.postMessage<TranscriptFindAction, ITranscript[]>({
+      action: 'database',
+      table: 'transcripts',
+      method: 'find',
+      value: {
+        host,
+        videoId,
+        filters,
       },
     })
   }
@@ -81,7 +105,7 @@ export default class DatabaseMessageService {
   postMessage<T extends DatabaseAction, R>(action: T) {
     return new Promise<R>((resolve, reject) => {
       const listener = (obj: object) => {
-        if (instanceOfDatabaseAction(obj)) {
+        if (instanceOfDatabaseAction(obj) && obj.method === action.method) {
           this.port.onMessage.removeListener(listener)
           if (obj.value instanceof Error) {
             reject(obj.value)
