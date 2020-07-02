@@ -9,12 +9,12 @@ const xmlObj = {
   transcript: {
     text: [
       {
-        _:
-          "Inside your head, you're like, \"It's one. You're speaking it,buddy. I'm done.\"",
+        _: 'which, really -- it has no equivalent in the English lexicon.',
         $: { start: '18.16', dur: '1.661' },
       },
       {
-        _: 'I actually want you to think of a number.',
+        _:
+          "Inside your head, you're like, \"It's one. You're speaking it,buddy. I'm done.\"",
         $: { start: '20.362', dur: '1.955' },
       },
     ],
