@@ -17,17 +17,30 @@ import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
 import TranscriptDetails from './components/TranscriptDetails'
+import TitleLabel from './components/TitleLabel'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: '10em auto',
+    gridTemplateRows: '2.5em 4px auto',
+    gridTemplateAreas: `
+      'header header'
+      '. .'
+      'buttons main'
+    `,
+    alignContent: 'space-around',
+    justifyContent: 'space-between',
     position: 'relative',
     width: 'auto',
     minHeight: '6em',
     padding: '1em 0.75em 1em 0.75em',
     marginTop: '1em',
     borderRadius: '3px',
+  },
+  header: {
+    gridArea: 'header',
   },
   spinner: {
     position: 'absolute',
@@ -40,11 +53,10 @@ const styles: { [key: string]: CSSProperties } = {
     justifyContent: 'center',
   },
   playerContainer: {
-    width: '10em',
-    flexShrink: 1,
+    gridArea: 'buttons',
   },
   userInputContainer: {
-    flexGrow: 1,
+    gridArea: 'main',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -302,6 +314,9 @@ const App = (props: PropsWithChildren<unknown>) => {
           }}
           onClick={handleClickWrapper}
         >
+          <div style={styles.header}>
+            <TitleLabel />
+          </div>
           <div style={styles.playerContainer}>
             <YoutubeVideo
               onLoaded={({ video }) => (videoRef.current = video)}
