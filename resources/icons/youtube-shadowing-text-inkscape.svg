@@ -9,91 +9,91 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="400mm"
-   height="32mm"
-   viewBox="0 0 400 32"
-   version="1.1"
-   id="svg8"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
    sodipodi:docname="youtube-shadowing-text-inkscape.svg"
-   inkscape:version="1.0 (4035a4f, 2020-05-01)">
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 800 32"
+   height="32mm"
+   width="800mm">
   <defs
      id="defs2">
     <linearGradient
-       id="text-fill"
-       osb:paint="gradient">
+       osb:paint="gradient"
+       id="text-fill">
       <stop
-         id="stop908"
+         style="stop-color:#ffd42a;stop-opacity:1"
          offset="0"
-         style="stop-color:#ffd42a;stop-opacity:1" />
+         id="stop908" />
       <stop
-         id="stop910"
+         style="stop-color:#ccff00;stop-opacity:1"
          offset="1"
-         style="stop-color:#ccff00;stop-opacity:1" />
+         id="stop910" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
-       id="background">
+       id="background"
+       inkscape:collect="always">
       <stop
-         style="stop-color:#ff2a7f;stop-opacity:1"
+         id="stop866"
          offset="0"
-         id="stop866" />
+         style="stop-color:#ff2a7f;stop-opacity:1" />
       <stop
-         style="stop-color:#ff8080;stop-opacity:1"
+         id="stop868"
          offset="1"
-         id="stop868" />
+         style="stop-color:#ff8080;stop-opacity:1" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
-       xlink:href="#background"
-       id="linearGradient872"
-       x1="79.375"
-       y1="168.95535"
-       x2="287.2619"
+       gradientTransform="matrix(2.3997,0,0,0.98443513,74.3764,-70.697676)"
+       gradientUnits="userSpaceOnUse"
        y2="53.672619"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.19985,0,0,0.98443513,37.1882,-70.697676)" />
+       x2="287.2619"
+       y1="168.95535"
+       x1="79.375"
+       id="linearGradient872"
+       xlink:href="#background"
+       inkscape:collect="always" />
     <linearGradient
-       inkscape:collect="always"
-       xlink:href="#text-fill"
-       id="linearGradient1028"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(1.2843294,1.0638471)"
-       x1="99.83857"
-       y1="16.523655"
+       y2="16.523655"
        x2="298.17706"
-       y2="16.523655" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#text-fill"
-       id="linearGradient1030"
+       y1="16.523655"
+       x1="99.83857"
+       gradientTransform="translate(201.28434,1.593013)"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(1.2843294,1.0638471)"
-       x1="99.011749"
-       y1="15.999999"
+       id="linearGradient935"
+       xlink:href="#text-fill"
+       inkscape:collect="always" />
+    <linearGradient
+       y2="15.999999"
        x2="300.98825"
-       y2="15.999999" />
+       y1="15.999999"
+       x1="99.011749"
+       gradientTransform="translate(201.28434,1.593013)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient937"
+       xlink:href="#text-fill"
+       inkscape:collect="always" />
   </defs>
   <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="191.42857"
-     inkscape:cy="560"
-     inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
-     inkscape:document-rotation="0"
-     showgrid="false"
-     inkscape:snap-bbox="true"
-     inkscape:snap-bbox-midpoints="true"
-     inkscape:window-width="1663"
-     inkscape:window-height="943"
-     inkscape:window-x="0"
+     inkscape:window-maximized="0"
      inkscape:window-y="23"
-     inkscape:window-maximized="0" />
+     inkscape:window-x="0"
+     inkscape:window-height="943"
+     inkscape:window-width="1663"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox="true"
+     showgrid="false"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="mm"
+     inkscape:cy="-109.62267"
+     inkscape:cx="1443.9723"
+     inkscape:zoom="0.75790702"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -107,29 +107,29 @@
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="レイヤー 1"
-     inkscape:groupmode="layer"
+     style="display:inline"
      id="layer1"
-     style="display:inline">
+     inkscape:groupmode="layer"
+     inkscape:label="レイヤー 1">
     <rect
-       style="fill:url(#linearGradient872);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.26046"
-       id="rect10"
-       width="400"
-       height="32"
+       y="0"
        x="0"
-       y="0" />
+       height="32"
+       width="800"
+       id="rect10"
+       style="fill:url(#linearGradient872);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.61099" />
     <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:22.5778px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:url(#linearGradient1028);fill-opacity:1;stroke:url(#linearGradient1030);stroke-width:0.264583"
-       x="199.07947"
-       y="22.71932"
-       id="text876"
+       inkscape:transform-center-y="1.5119048"
        inkscape:transform-center-x="0.75595238"
-       inkscape:transform-center-y="1.5119048"><tspan
-         sodipodi:role="line"
-         x="199.07947"
-         y="22.71932"
-         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:22.5778px;font-family:Palatino;-inkscape-font-specification:'Palatino Bold Italic';text-align:center;text-anchor:middle;fill:url(#linearGradient1028);fill-opacity:1;stroke:url(#linearGradient1030);stroke-width:0.264583"
-         id="tspan878">Youtube Shadowing</tspan></text>
+       id="text876"
+       y="23.248487"
+       x="399.07947"
+       style="font-style:normal;font-weight:normal;font-size:22.5778px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:url(#linearGradient935);fill-opacity:1;stroke:url(#linearGradient937);stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         id="tspan878"
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:22.5778px;font-family:Palatino;-inkscape-font-specification:'Palatino Bold Italic';text-align:center;text-anchor:middle;fill:url(#linearGradient935);fill-opacity:1;stroke:url(#linearGradient937);stroke-width:0.264583"
+         y="23.248487"
+         x="399.07947"
+         sodipodi:role="line">Youtube Shadowing</tspan></text>
   </g>
 </svg>
