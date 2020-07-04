@@ -71,6 +71,7 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     opacity: 0,
   }),
   word: css({
+    display: 'inline',
     paddingLeft: '0.5em',
     cursor: 'pointer',
   }),
@@ -131,14 +132,68 @@ interface WordProcessorResult {
   spoken: boolean
 }
 
+interface WordRenderProps {
+  type: 'mask' | 'diff' | 'answer'
+  chars: WordProcessorResult[]
+}
+const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
+  const { type, chars } = props
+  const [showIndexes, setShowIndexes] = useState<number[]>([])
+  const handleMouseEnter = (index: number) => () => {
+    setShowIndexes([index])
+  }
+  const handleMouseLeave = (index: number) => () => {
+    setShowIndexes(showIndexes.filter((i) => i !== index))
+  }
+  const getAnswerCss = (result: WordProcessorResult) => {
+    if (result.correct) {
+      return styles.correct
+    }
+    return result.s ? styles.wrong : styles.notInput
+  }
+  return (
+    <span>
+      {type === 'mask' &&
+        chars.map((rslt, index) => (
+          <i
+            css={styles.masked}
+            key={index}
+            onMouseEnter={handleMouseEnter(index)}
+            onMouseLeave={handleMouseLeave(index)}
+          >
+            {!rslt.spoken || showIndexes.indexOf(index) >= 0
+              ? rslt.w
+              : rslt.s
+              ? rslt.s
+              : rslt.mask}
+          </i>
+        ))}
+      {type === 'diff' &&
+        chars.map((rslt, index) => (
+          <i key={index} css={getAnswerCss(rslt)}>
+            {rslt.s && !rslt.correct ? rslt.s : rslt.w}
+          </i>
+        ))}
+      {type === 'answer' &&
+        chars.map((rslt, index) => (
+          <i key={index} css={getAnswerCss(rslt)}>
+            {rslt.w}
+          </i>
+        ))}
+    </span>
+  )
+}
+
 class WordProcessor {
   key: string
   srtWord: string
   results: WordProcessorResult[]
+  showIndexes: number[]
   length = 0
   constructor(word: string) {
     this.key = uuidv4()
     this.srtWord = word
+    this.showIndexes = []
     this.results = word.split('').map((w) => ({
       w,
       mask: WHITE_SPACE,
@@ -255,49 +310,6 @@ class WordProcessor {
 
     this.length = parseInt(index, 10) + 1
     return str.substr(this.length)
-  }
-
-  get render() {
-    return (
-      <span>
-        {this.results.map((rslt, index) => (
-          <i css={styles.masked} key={index}>
-            {rslt.spoken ? (rslt.s ? rslt.s : rslt.mask) : rslt.w}
-          </i>
-        ))}
-      </span>
-    )
-  }
-
-  get renderDiff() {
-    return (
-      <span>
-        {this.results.map((rslt, index) => (
-          <i key={index} css={this.getAnswerCss(rslt)}>
-            {rslt.s && !rslt.correct ? rslt.s : rslt.w}
-          </i>
-        ))}
-      </span>
-    )
-  }
-
-  get renderAnswer() {
-    return (
-      <span>
-        {this.results.map((rslt, index) => (
-          <i key={index} css={this.getAnswerCss(rslt)}>
-            {rslt.w}
-          </i>
-        ))}
-      </span>
-    )
-  }
-
-  private getAnswerCss(result: WordProcessorResult) {
-    if (result.correct) {
-      return styles.correct
-    }
-    return result.s ? styles.wrong : styles.notInput
   }
 }
 
@@ -499,10 +511,12 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         <p css={styles.paragraph} onClick={handleParagraphClick}>
           {(inputValue || result.show || true) &&
             wordProcessors.map((wp) => (
-              <span css={styles.word} key={wp.key}>
-                {result.show && (showDiff ? wp.renderDiff : wp.renderAnswer)}
-                {!result.show && wp.render}
-              </span>
+              <div css={styles.word} key={wp.key}>
+                <WordRender
+                  chars={wp.results}
+                  type={result.show ? (showDiff ? 'diff' : 'answer') : 'mask'}
+                />
+              </div>
             ))}
         </p>
       </div>
