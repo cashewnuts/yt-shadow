@@ -71,7 +71,7 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     opacity: 0,
   }),
   word: css({
-    display: 'inline',
+    display: 'inline-block',
     paddingLeft: '0.5em',
     cursor: 'pointer',
   }),
