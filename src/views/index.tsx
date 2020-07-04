@@ -6,11 +6,14 @@ import { AppContextProvider } from '@/contexts/AppContext'
 
 const MemoizedApp = memo(App)
 
-export const render = (id: string) => {
+export const render = (element: Element) => {
   ReactDOM.render(
     <AppContextProvider>
       <MemoizedApp />
     </AppContextProvider>,
-    document.getElementById(id)
+    element
   )
+}
+export const unmount = (element: Element) => {
+  ReactDOM.unmountComponentAtNode(element)
 }
