@@ -24,8 +24,7 @@
       "48": "icons/yt-48.png",
       "96": "icons/yt-96.png"
     },
-    "default_title": "Yt Shadow",
-    "default_popup": "popup/popup.html"
+    "default_title": "Yt Shadow"
   },
   "permissions": [
     "*://video.google.com/*",
