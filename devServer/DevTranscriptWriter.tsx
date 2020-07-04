@@ -32,7 +32,11 @@ const DevTranscriptWriter = () => {
 
   return (
     <AppContextProvider>
-      <TranscriptWriter text={transcript} inputRef={inputRef} />
+      <TranscriptWriter
+        text={transcript}
+        videoId="devVideoId"
+        inputRef={inputRef}
+      />
     </AppContextProvider>
   )
 }

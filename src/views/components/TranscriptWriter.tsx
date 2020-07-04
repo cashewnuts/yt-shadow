@@ -157,6 +157,7 @@ const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
         chars.map((rslt, index) => (
           <i
             css={styles.masked}
+            style={!rslt.spoken ? { borderBottom: 'unset' } : {}}
             key={index}
             onMouseEnter={handleMouseEnter(index)}
             onMouseLeave={handleMouseLeave(index)}
@@ -194,12 +195,15 @@ class WordProcessor {
     this.key = uuidv4()
     this.srtWord = word
     this.showIndexes = []
-    this.results = word.split('').map((w) => ({
-      w,
-      mask: WHITE_SPACE,
-      correct: false,
-      spoken: checkSpokenChar(w),
-    }))
+    this.results = word.split('').map((w) => {
+      const spoken = checkSpokenChar(w)
+      return {
+        w,
+        mask: WHITE_SPACE,
+        correct: !spoken,
+        spoken,
+      }
+    })
   }
 
   get isCorrect() {
@@ -220,6 +224,9 @@ class WordProcessor {
       .filter(Boolean)
       .join('')
   }
+  get hasSomeSpoken() {
+    return this.results.some((r) => r.spoken)
+  }
 
   validInput() {
     return this.results
@@ -237,59 +244,61 @@ class WordProcessor {
     this.length = 0
     const word = this.srtWord
     const results: WordProcessorResult[] = []
-    let index = '0'
-    for (index in str.split('')) {
-      const idxNum = parseInt(index, 10)
-      const s = str[idxNum]
-      const isSpace = /\s/.test(s)
-      if (isSpace) {
-        offsetCursor++
-        continue
-      }
-      const wordIndex = idxNum - offsetCursor
-      const w = word[wordIndex]
-      const spoken = checkSpokenChar(w)
-      // if 's' is Symbols and not equels to 'w', then check next char is correct
-      if (!spoken && w !== s) {
-        const nw = word[wordIndex + 1]
-        const _spoken = checkSpokenChar(nw)
+    let index = 0
+    if (!this.hasSomeSpoken) {
+      index = -1
+    } else {
+      for (index = 0; index < str.length; index++) {
+        const s = str[index]
+        const isSpace = /\s/.test(s)
+        if (isSpace) {
+          offsetCursor++
+          continue
+        }
+        for (let j = index - offsetCursor; j < word.length; j++) {
+          const w = word[j]
+          const spoken = checkSpokenChar(w)
 
-        results.push({
-          w,
-          s: w,
-          mask: WHITE_SPACE,
-          correct: true,
-          spoken,
-        })
-        results.push({
-          w: nw,
-          s,
-          mask: WHITE_SPACE,
-          correct: s.toLowerCase() === nw.toLowerCase() || !_spoken,
-          spoken: _spoken,
-        })
-        offsetCursor--
+          if (word.length <= results.length) {
+            break
+          }
+          // if 's' is Symbols and not equels to 'w', then check next char is correct
+          if (!spoken && w !== s) {
+            results.push({
+              w,
+              s: w,
+              mask: WHITE_SPACE,
+              correct: true,
+              spoken,
+            })
+            offsetCursor--
+          } else {
+            break
+          }
+        }
         if (word.length <= results.length) {
           break
         }
-        continue
-      }
-      results.push({
-        w,
-        s,
-        mask: WHITE_SPACE,
-        correct: s.toLowerCase() === w.toLowerCase() || !spoken,
-        spoken,
-      })
-      if (word.length <= results.length) {
-        break
-      }
-      if (word.length - 1 === wordIndex + 1) {
-        const nextS = str[idxNum + 1]
-        const nextW = word[wordIndex + 1]
-        const nextSpoken = checkSpokenChar(nextW)
-        if (!nextSpoken && nextS !== nextW) {
+        const wordIndex = index - offsetCursor
+        const w = word[wordIndex]
+        const spoken = checkSpokenChar(w)
+        results.push({
+          w,
+          s,
+          mask: WHITE_SPACE,
+          correct: s.toLowerCase() === w.toLowerCase() || !spoken,
+          spoken,
+        })
+        if (word.length <= results.length) {
           break
+        }
+        if (word.length - 1 === wordIndex + 1) {
+          const nextS = str[index + 1]
+          const nextW = word[wordIndex + 1]
+          const nextSpoken = checkSpokenChar(nextW)
+          if (!nextSpoken && nextS !== nextW) {
+            break
+          }
         }
       }
     }
@@ -307,8 +316,7 @@ class WordProcessor {
         spoken,
       }
     })
-
-    this.length = parseInt(index, 10) + 1
+    this.length = index + 1
     return str.substr(this.length)
   }
 }
@@ -431,7 +439,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       let lastWp = wordProcessors[0]
       for (const wp of wordProcessors) {
         if (!wp.hasInput) {
-          break
+          continue
         }
         lastWp = wp
         length += wp.length
