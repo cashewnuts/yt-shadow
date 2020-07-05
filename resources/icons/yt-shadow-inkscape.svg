@@ -15,7 +15,7 @@
    viewBox="0 0 24 24"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0rc1 (09960d6f05, 2020-04-09)"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
    sodipodi:docname="yt-shadow-inkscape.svg">
   <defs
      id="defs2">
@@ -50,9 +50,9 @@
      inkscape:current-layer="text10"
      inkscape:document-rotation="0"
      showgrid="false"
-     inkscape:window-width="2015"
-     inkscape:window-height="1269"
-     inkscape:window-x="26"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="4"
      inkscape:window-y="23"
      inkscape:window-maximized="0" />
   <metadata
@@ -77,13 +77,12 @@
        id="text10"
        style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect12);fill:#ff8080;fill-opacity:1;stroke:none">
       <text
-         transform="matrix(1.6697147,0,0,1.6242084,13.492396,-3.5473191)"
-         style="font-style:normal;font-weight:normal;font-size:6.46565px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect13);fill:#ff5555;fill-opacity:1;stroke:none;"
+         transform="matrix(1.6697147,0,0,1.6242084,13.189291,-3.8419192)"
+         style="font-style:normal;font-weight:normal;font-size:6.46565000000000012px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect13);fill:#ff5555;fill-opacity:1;stroke:none;"
          id="text11"
          xml:space="preserve"><tspan
-           sodipodi:role="line"
            x="-6.1777344"
-           y="12.519413"><tspan>YS</tspan></tspan></text>
+           y="12.697637"><tspan>YS</tspan></tspan></text>
     </g>
   </g>
 </svg>
