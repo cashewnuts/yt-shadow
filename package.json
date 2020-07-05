@@ -11,7 +11,10 @@
     "dev:webpack": "webpack-dev-server --config webpack-dev-server.config.js",
     "build": "npm run build:webpack && npm run build:web-ext",
     "build:webpack": "NODE_ENV=production webpack",
-    "build:web-ext": "web-ext build -o -s addon"
+    "build:web-ext": "web-ext build -o -s addon",
+    "package": "npm run package:master",
+    "package:master": "git archive --format=zip --prefix=yt-shadow/ master -o yt-shadow-source.zip",
+    "package:HEAD": "git archive --format=zip --prefix=yt-shadow/ HEAD -o yt-shadow-source-HEAD.zip"
   },
   "keywords": [],
   "author": "",
