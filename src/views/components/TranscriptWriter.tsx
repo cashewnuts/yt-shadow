@@ -42,6 +42,8 @@ export interface TranscriptWriterProps {
   onRangeOpen?: () => void
   onFocus?: (focus: boolean) => void
   onInput?: (value: onInputType) => void
+  onHelp?: () => void
+  onEscape?: () => void
 }
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -467,6 +469,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     if ((key === 'u' || key === 'r') && ctrlKey) {
       stopPrevents()
       props.onRepeat?.call(null)
+    }
+    if (key === '/' && ctrlKey) {
+      stopPrevents()
+      props.onHelp?.call(null)
+    }
+    if (key === 'Escape') {
+      props.onEscape?.call(null)
     }
     if (
       (key === 'o' && ctrlKey) ||
