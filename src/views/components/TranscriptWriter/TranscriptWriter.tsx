@@ -248,6 +248,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       }
     }
     if (key === 'Backspace' && ctrlKey) {
+      stopPrevents()
       if (!wordProcessors || wordProcessors.length === 0) {
         return
       }
