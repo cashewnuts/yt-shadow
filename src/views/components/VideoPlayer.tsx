@@ -12,6 +12,7 @@ export interface VideoPlayerProps {
   onPrevious?: () => void
   onRangeOpen?: () => void
   onRepeat?: () => void
+  onHelp?: () => void
 }
 
 const styles: {
@@ -43,16 +44,12 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
     })
   }, [video])
 
-  const handlePlayClick = () => {
-    if (isPlaying) {
-      video.pause()
-    } else {
-      video.play()
-    }
-  }
   return (
     <div style={styles.wrapper}>
       <div style={styles.playerWrapper}>
+        <button style={styles.button} onClick={props.onHelp}>
+          help
+        </button>
         <button style={styles.button} onClick={props.onRangeOpen}>
           range
         </button>
