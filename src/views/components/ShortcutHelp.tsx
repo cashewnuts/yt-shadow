@@ -15,6 +15,9 @@ const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     margin: '0.5em',
   },
+  helpTitle: {
+    fontSize: '15px',
+  },
   helpCloseButton: {
     position: 'absolute',
     top: '3px',
@@ -27,11 +30,28 @@ const styles: { [key: string]: CSSProperties } = {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     listStyle: 'none',
+    padding: '1em 0.5em',
   },
   helpItem: {
     height: '3em',
-    background: '#00ffaa44',
     marginBottom: '0.5em',
+    display: 'flex',
+  },
+  helpLabel: {
+    width: '6em',
+    padding: '0.25em',
+  },
+  helpCode: {
+    backgroundColor: 'rgb(243,243,243)',
+    color: 'rgb(33,33,33)',
+    border: 'solid 1px #ccc',
+    fontFamily: 'monospace',
+    borderRadius: '4px',
+    padding: '1px 3px',
+  },
+  helpInfo: {
+    width: 'auto',
+    padding: '0.25em',
   },
 }
 
@@ -41,29 +61,52 @@ export interface ShortcutHelpProps {}
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShortcutHelp = (props: PropsWithChildren<ShortcutHelpProps>) => {
   const shortcutContext = useContext(ShortcutContext)
-  const [shortcutList, setShortcutList] = useState<ShortcutItem[]>([])
+  const [shortcutList, setShortcutList] = useState<
+    { shortcuts: string[]; info: string }[]
+  >([])
   useEffect(() => {
     const { config } = shortcutContext
     const shortcutItems = Object.keys(config)
       .sort((a, b) => a.localeCompare(b))
       .map((key) => {
         const shortcut = config[key as ShortcutKey]
-        return shortcut
+        const c = (bool: boolean | undefined, char: string) => {
+          return bool ? `${char}-` : ''
+        }
+        return {
+          shortcuts: shortcut.shortcuts.map(
+            (s) =>
+              `<${c(s.ctrlKey, 'c')}${c(s.altKey, 'a')}${c(s.metaKey, 'm')}${
+                s.key
+              }>`
+          ),
+          info: shortcut.info,
+        }
       })
     setShortcutList(shortcutItems)
   }, [shortcutContext])
   return (
     <div style={styles.wrapper}>
-      <div>
+      <div style={styles.helpTitle}>
         <h2>Help</h2>
       </div>
       <hr />
       <div style={styles.helpContent}>
         <ul style={styles.helpItemContainer}>
-          <li style={styles.helpItem}>item 1</li>
-          <li style={styles.helpItem}>item 2</li>
-          <li style={styles.helpItem}>item 3</li>
-          <li style={styles.helpItem}>item 4</li>
+          {shortcutList.map((shortcut) => (
+            <li key={shortcut.shortcuts.join('&')} style={styles.helpItem}>
+              <div style={styles.helpLabel}>
+                {shortcut.shortcuts.map((code) => (
+                  <code key={code} style={styles.helpCode}>
+                    {code}
+                  </code>
+                ))}
+              </div>
+              <div style={styles.helpInfo}>
+                <p>{shortcut.info}</p>
+              </div>
+            </li>
+          ))}
         </ul>
       </div>
     </div>
