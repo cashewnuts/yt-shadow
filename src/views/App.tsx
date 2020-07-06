@@ -18,6 +18,7 @@ import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
 import TranscriptDetails from './components/TranscriptDetails'
 import TitleLabel from './components/TitleLabel'
+import ShortcutHelp from './components/ShortcutHelp'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -38,6 +39,18 @@ const styles: { [key: string]: CSSProperties } = {
     padding: '1em 0.75em 1em 0.75em',
     marginTop: '1em',
     borderRadius: '3px',
+  },
+  help: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#fff',
+    zIndex: 1000,
+  },
+  helpCloseButton: {
+    position: 'absolute',
+    top: '3px',
+    right: '3px',
   },
   header: {
     gridArea: 'header',
@@ -71,6 +84,7 @@ enum SRTPropName {
 const App = (props: PropsWithChildren<unknown>) => {
   const { dbMessageService } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
+  const [helpOpen, setHelpOpen] = useState(false)
   const srtRef = useRef<SRT>()
   const videoRef = useRef<HTMLVideoElement>()
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -288,6 +302,12 @@ const App = (props: PropsWithChildren<unknown>) => {
       logger.error('dbMessageService.patch for input', err)
     }
   }
+  const handleHelp = () => {
+    setHelpOpen(!helpOpen)
+  }
+  const handleEscape = () => {
+    setHelpOpen(false)
+  }
   const handleClickWrapper = () => {
     inputRef.current?.focus()
   }
@@ -314,6 +334,12 @@ const App = (props: PropsWithChildren<unknown>) => {
           }}
           onClick={handleClickWrapper}
         >
+          <div style={{ ...styles.help, display: helpOpen ? 'block' : 'none' }}>
+            <div style={styles.helpCloseButton}>
+              <button onClick={setHelpOpen.bind(null, false)}>close</button>
+            </div>
+            <ShortcutHelp />
+          </div>
           <div style={styles.header}>
             <TitleLabel />
           </div>
@@ -332,6 +358,7 @@ const App = (props: PropsWithChildren<unknown>) => {
                   onRepeat={handleRepeatVideo}
                   onNext={handleNextPrevTranscript(1)}
                   onPrevious={handleNextPrevTranscript(-1)}
+                  onHelp={handleHelp}
                 />
               )}
             />
@@ -374,6 +401,8 @@ const App = (props: PropsWithChildren<unknown>) => {
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
+              onHelp={handleHelp}
+              onEscape={handleEscape}
             >
               <TranscriptDetails
                 text={transcriptState.text}
