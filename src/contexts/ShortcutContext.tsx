@@ -5,7 +5,7 @@ const logger = createLogger('ShortcutContext.tsx')
 export enum ShortcutKey {
   PLAY = '01.play',
   PAUSE = '02.pause',
-  TOGGLE = '03.toggle',
+  // TOGGLE = '03.toggle',
   REPEAT = '04.repeat',
   PREVIOUS = '05.previous',
   NEXT = '06.next',
@@ -16,9 +16,9 @@ export enum ShortcutKey {
 
 export interface Shortcut {
   key: string
-  ctrlKey?: boolean
-  metaKey?: boolean
-  altKey?: boolean
+  ctrlKey: boolean
+  metaKey: boolean
+  altKey: boolean
 }
 
 export interface ShortcutItem {
@@ -30,45 +30,56 @@ export type ShortcutConfig = {
   [key in ShortcutKey]: ShortcutItem
 }
 
+const makeShortcutObject = (
+  shortcut: Partial<Shortcut> & { key: string }
+): Shortcut => {
+  return {
+    key: shortcut.key,
+    ctrlKey: shortcut.ctrlKey || false,
+    altKey: shortcut.altKey || false,
+    metaKey: shortcut.metaKey || false,
+  }
+}
+
 export const DefaultShortcutConfig: ShortcutConfig = {
   [ShortcutKey.PLAY]: {
-    shortcuts: [{ key: 'k', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'k', ctrlKey: true })],
     info: 'Play',
   },
   [ShortcutKey.PAUSE]: {
-    shortcuts: [{ key: 'j', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'j', ctrlKey: true })],
     info: 'Pause',
   },
-  [ShortcutKey.TOGGLE]: {
-    shortcuts: [{ key: 'r', ctrlKey: true }],
-    info: 'Toggle Play/Pause',
-  },
+  // [ShortcutKey.TOGGLE]: {
+  //   shortcuts: [{ key: 'r', ctrlKey: true }],
+  //   info: 'Toggle Play/Pause',
+  // },
   [ShortcutKey.REPEAT]: {
-    shortcuts: [{ key: 'r', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'r', ctrlKey: true })],
     info: 'Repeat',
   },
   [ShortcutKey.PREVIOUS]: {
-    shortcuts: [{ key: 'h', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'h', ctrlKey: true })],
     info: 'Previous',
   },
   [ShortcutKey.NEXT]: {
-    shortcuts: [{ key: 'l', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'l', ctrlKey: true })],
     info: 'Next',
   },
   [ShortcutKey.RANGEOPEN]: {
-    shortcuts: [{ key: 'k', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'g', ctrlKey: true })],
     info: 'Open range',
   },
   [ShortcutKey.HELP]: {
-    shortcuts: [{ key: 'k', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'k', ctrlKey: true })],
     info: 'Open help / Close help',
   },
   [ShortcutKey.TOGGLE_ANSWER]: {
-    shortcuts: [{ key: 'o', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: 'o', ctrlKey: true })],
     info: 'Toggle show answer',
   },
   [ShortcutKey.HELP]: {
-    shortcuts: [{ key: '/', ctrlKey: true }],
+    shortcuts: [makeShortcutObject({ key: '/', ctrlKey: true })],
     info: 'Open help / Close help',
   },
 }

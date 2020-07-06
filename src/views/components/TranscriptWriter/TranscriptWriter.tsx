@@ -23,6 +23,7 @@ import CheckAnimation from '../CheckAnimation'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
 import { WordProcessor } from './WordProcessor'
+import { ShortcutContext, ShortcutKey } from '@/contexts/ShortcutContext'
 const logger = createLogger('TranscriptWriter.tsx')
 
 export type onInputType = {
@@ -113,6 +114,28 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   )
   const { setFocus } = useContext(AppContext)
   const { dbMessageService } = useContext(MessageContext)
+  const { config: shortcutConfig } = useContext(ShortcutContext)
+
+  const toggleAnswer = () => {
+    const correct = wordProcessors.every((wp) => wp.isCorrect)
+    setResult({
+      ...result,
+      correct,
+      show: !result.show,
+    })
+  }
+
+  const shortcutEvents = {
+    [ShortcutKey.PLAY]: props.onPlay,
+    [ShortcutKey.PAUSE]: props.onPause,
+    // [ShortcutKey.TOGGLE]: props.onRepeat,
+    [ShortcutKey.REPEAT]: props.onRepeat,
+    [ShortcutKey.PREVIOUS]: props.onPrevious,
+    [ShortcutKey.NEXT]: props.onNext,
+    [ShortcutKey.RANGEOPEN]: props.onRangeOpen,
+    [ShortcutKey.TOGGLE_ANSWER]: toggleAnswer,
+    [ShortcutKey.HELP]: props.onHelp,
+  }
 
   const emitOnInput = useCallback(() => {
     const answer = wordProcessors
@@ -208,8 +231,23 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       event.preventDefault()
       event.stopPropagation()
     }
+    for (const configKey of Object.keys(shortcutConfig)) {
+      const sKey = configKey as ShortcutKey
+      const shortcut = shortcutConfig[sKey]
+      const match = shortcut.shortcuts.some(
+        (sc) =>
+          sc.ctrlKey === ctrlKey &&
+          sc.altKey === altKey &&
+          sc.metaKey === metaKey &&
+          sc.key === key
+      )
+      if (match) {
+        stopPrevents()
+        shortcutEvents[sKey]?.call(null)
+        break
+      }
+    }
     if (key === 'Backspace' && ctrlKey) {
-      stopPrevents()
       if (!wordProcessors || wordProcessors.length === 0) {
         return
       }
@@ -226,44 +264,12 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       updateWordProcessorInput(newInputValue)
       setInputValue(newInputValue)
     }
-    if (key === 'h' && ctrlKey) {
-      stopPrevents()
-      props.onPrevious?.call(null)
-    }
-    if (key === 'j' && ctrlKey) {
-      stopPrevents()
-      props.onPause?.call(null)
-    }
-    if (key === 'k' && ctrlKey) {
-      stopPrevents()
-      props.onPlay?.call(null)
-    }
-    if (key === 'l' && ctrlKey) {
-      stopPrevents()
-      props.onNext?.call(null)
-    }
-    if ((key === 'u' || key === 'r') && ctrlKey) {
-      stopPrevents()
-      props.onRepeat?.call(null)
-    }
-    if (key === '/' && ctrlKey) {
-      stopPrevents()
-      props.onHelp?.call(null)
-    }
     if (key === 'Escape') {
       props.onEscape?.call(null)
     }
-    if (
-      (key === 'o' && ctrlKey) ||
-      (inputEnded && key === 'Enter' && ctrlKey)
-    ) {
+    if (inputEnded && key === 'Enter' && ctrlKey) {
       stopPrevents()
-      const correct = wordProcessors.every((wp) => wp.isCorrect)
-      setResult({
-        ...result,
-        correct,
-        show: !result.show,
-      })
+      toggleAnswer()
     }
   }
   const showAnswerClickHandler = () => {
