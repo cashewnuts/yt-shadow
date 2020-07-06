@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "YtShadow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shadowing extensions for youtube",
   "icons": {
     "24": "icons/yt-24.png",
