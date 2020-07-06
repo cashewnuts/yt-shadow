@@ -14,7 +14,7 @@ import zip from 'lodash/zip'
 import { ITranscript } from '../models/transcript'
 const logger = createLogger('background.ts')
 
-let portFromCS: browser.runtime.Port
+let portFromCS: browser.runtime.Port[] = []
 
 async function databaseActionHandler(
   port: browser.runtime.Port,
@@ -173,15 +173,22 @@ async function databaseActionHandler(
 }
 
 export function connected(p: browser.runtime.Port) {
-  portFromCS = p
-  portFromCS.postMessage<ConnectionMessage>({
+  p.postMessage<ConnectionMessage>({
     message: 'from background script!',
   })
-  portFromCS.onMessage.addListener(async (obj) => {
+  const onMessageHandler = async (obj: unknown) => {
     if (instanceOfDatabaseAction(obj)) {
-      await databaseActionHandler(portFromCS, obj)
+      await databaseActionHandler(p, obj)
     } else if (instanceOfMessage(obj)) {
       logger.info(obj.message)
     }
-  })
+  }
+  const onDisconnectHandler = () => {
+    p.onMessage.removeListener(onMessageHandler)
+    p.onDisconnect.removeListener(onDisconnectHandler)
+    portFromCS = portFromCS.filter((item) => item !== p)
+  }
+  p.onMessage.addListener(onMessageHandler)
+  p.onDisconnect.addListener(onDisconnectHandler)
+  portFromCS.push(p)
 }
