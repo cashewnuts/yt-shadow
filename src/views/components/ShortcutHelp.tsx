@@ -1,4 +1,15 @@
-import React, { PropsWithChildren, CSSProperties } from 'react'
+import React, {
+  PropsWithChildren,
+  CSSProperties,
+  useContext,
+  useState,
+  useEffect,
+} from 'react'
+import {
+  ShortcutContext,
+  ShortcutKey,
+  ShortcutItem,
+} from '@/contexts/ShortcutContext'
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -29,6 +40,18 @@ export interface ShortcutHelpProps {}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ShortcutHelp = (props: PropsWithChildren<ShortcutHelpProps>) => {
+  const shortcutContext = useContext(ShortcutContext)
+  const [shortcutList, setShortcutList] = useState<ShortcutItem[]>([])
+  useEffect(() => {
+    const { config } = shortcutContext
+    const shortcutItems = Object.keys(config)
+      .sort((a, b) => a.localeCompare(b))
+      .map((key) => {
+        const shortcut = config[key as ShortcutKey]
+        return shortcut
+      })
+    setShortcutList(shortcutItems)
+  }, [shortcutContext])
   return (
     <div style={styles.wrapper}>
       <div>

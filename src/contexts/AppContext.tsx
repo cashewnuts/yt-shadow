@@ -8,7 +8,9 @@ import React, {
 } from 'react'
 import { createLogger } from '@/helpers/logger'
 import { MessageContextProvider } from './MessageContext'
+import { ShortcutContextProvider } from './ShortcutContext'
 const MemoinizedMessageContextProvider = memo(MessageContextProvider)
+const MemoinizedShortcutContextProvider = memo(ShortcutContextProvider)
 const logger = createLogger('AppContext.tsx')
 
 export interface AppContextParams {
@@ -30,7 +32,9 @@ export const AppContextProvider = (props: PropsWithChildren<unknown>) => {
   return (
     <AppContext.Provider value={value}>
       <MemoinizedMessageContextProvider>
-        {props.children}
+        <MemoinizedShortcutContextProvider>
+          {props.children}
+        </MemoinizedShortcutContextProvider>
       </MemoinizedMessageContextProvider>
     </AppContext.Provider>
   )
