@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Button, Switch } from '@blueprintjs/core'
+import { Button, Switch, Divider } from '@blueprintjs/core'
 import { createLogger } from '@/helpers/logger'
 import {
   getCurrentSetting,
@@ -51,14 +51,17 @@ const Popup = (props: PropsWithChildren<unknown>) => {
         <Switch
           checked={active}
           label="Active"
+          large
           onChange={handleToggleActivateClick}
         />
       </div>
+      <Divider />
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          paddingTop: '0.5em',
         }}
       >
         <Button

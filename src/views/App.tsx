@@ -19,7 +19,7 @@ import { MessageContext } from '@/contexts/MessageContext'
 import TranscriptDetails from './components/TranscriptDetails'
 import TitleLabel from './components/TitleLabel'
 import ShortcutHelp from './components/ShortcutHelp'
-import { Button } from '@blueprintjs/core'
+import { Button, Card } from '@blueprintjs/core'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
@@ -327,12 +327,13 @@ const App = (props: PropsWithChildren<unknown>) => {
   return (
     <AppContextConsumer>
       {({ focus }) => (
-        <div
+        <Card
+          interactive={true}
           style={{
             ...styles.wrapper,
             boxShadow: focus
               ? '0px 0px 8px rgba(208, 0, 0, 0.5)'
-              : '0px 0px 3px rgba(40, 40, 40, 0.5)',
+              : '0px 0px 4px rgba(40, 40, 40, 0.5)',
           }}
           onClick={handleClickWrapper}
         >
@@ -413,7 +414,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               />
             </TranscriptWriter>
           </div>
-        </div>
+        </Card>
       )}
     </AppContextConsumer>
   )
