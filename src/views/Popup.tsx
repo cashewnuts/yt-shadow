@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Button } from '@blueprintjs/core'
+import { Button, Switch } from '@blueprintjs/core'
 import { createLogger } from '@/helpers/logger'
 import {
   getCurrentSetting,
@@ -10,9 +10,9 @@ import {
 const logger = createLogger('Popup.tsx')
 const DASHBOARD_URL = '/dashboard/dashboard.html'
 
-export const renderPopup = () => {
-  logger.info('renderPopup')
-  ReactDOM.render(<Popup />, document.getElementById('popup-id'))
+export const renderPopup = (element: HTMLElement) => {
+  logger.info('renderPopup', element)
+  ReactDOM.render(<Popup />, element)
 }
 
 const Popup = (props: PropsWithChildren<unknown>) => {
@@ -39,7 +39,7 @@ const Popup = (props: PropsWithChildren<unknown>) => {
     }
   }
   return (
-    <div style={{ width: '15em' }}>
+    <div style={{ width: '15em', padding: '1em' }}>
       <div
         style={{
           display: 'flex',
@@ -48,26 +48,17 @@ const Popup = (props: PropsWithChildren<unknown>) => {
           height: '4em',
         }}
       >
-        {active ? (
-          <Button
-            text="Deactivate"
-            intent="none"
-            onClick={handleToggleActivateClick}
-          />
-        ) : (
-          <Button
-            text="Activate"
-            intent="primary"
-            onClick={handleToggleActivateClick}
-          />
-        )}
+        <Switch
+          checked={active}
+          label="Active"
+          onChange={handleToggleActivateClick}
+        />
       </div>
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '4em',
         }}
       >
         <Button

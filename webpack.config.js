@@ -12,6 +12,7 @@ const webpackConfig = {
     'yt-shadow': './src/yt-shadow.ts',
     background: './src/background.ts',
     'popup/popup': './src/popup.ts',
+    'dashboard/dashboard': './src/dashboard.ts',
   },
   output: {
     path: path.resolve(__dirname, 'addon'),
