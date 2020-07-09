@@ -47,8 +47,8 @@ const webpackConfig = {
   },
   performance: {
     hints: 'error',
-    maxEntrypointSize: 1000000,
-    maxAssetSize: 1000000,
+    maxEntrypointSize: 3000000,
+    maxAssetSize: 3000000,
   },
   plugins: [
     new CopyWebpackPlugin({
