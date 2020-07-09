@@ -51,7 +51,7 @@ const TranscriptDetails = (
   }, [dbMessageService, text, videoId])
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <p>
+      <p style={{ margin: 'auto' }}>
         {infos.doneCount + (state?.done && state.correct ? 1 : 0)}/
         <b>{infos.totalLength}</b>
       </p>

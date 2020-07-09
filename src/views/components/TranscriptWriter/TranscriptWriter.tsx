@@ -10,6 +10,7 @@ import React, {
   SyntheticEvent,
   useCallback,
 } from 'react'
+import { Button, Tooltip } from '@blueprintjs/core'
 import { SRTMeasure } from '../../../models/srt'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,8 +57,8 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
   check: css({
     position: 'absolute',
-    top: '5px',
-    right: '5px',
+    top: '0',
+    right: '0',
   }),
   bottomContainer: css({
     flexGrow: 0,
@@ -83,7 +84,7 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     fontSize: '16px',
     fontFamily: "'Roboto', monospace",
     margin: '0.75em 0',
-    padding: '0 1em',
+    padding: '0 1.25em 0 1em',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -288,6 +289,9 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       event.stopPropagation()
     }
   }
+  const toggleShowDiff = () => {
+    setShowDiff(!showDiff)
+  }
   return (
     <div
       css={styles.wrapper}
@@ -299,12 +303,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-            <button
-              css={styles.diffButton}
-              onClick={() => setShowDiff(!showDiff)}
-            >
-              {showDiff ? 'correct' : 'diff'}
-            </button>
+            <Tooltip content={showDiff ? 'correct' : 'diff'}>
+              <Button
+                css={styles.diffButton}
+                icon={showDiff ? 'clean' : 'delta'}
+                onClick={toggleShowDiff}
+              />
+            </Tooltip>
           ))}
       </div>
       <div css={styles.paragraphContainer}>
@@ -335,8 +340,23 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         <div style={{ width: '80%' }}>{props.children}</div>
         <div style={{ width: '20%' }}>
           {text && (
-            <div>
-              <button onClick={showAnswerClickHandler}>Show Answer</button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Tooltip>
+                {result.show ? (
+                  <Button
+                    icon={result.correct ? 'clean' : 'draw'}
+                    text={result.correct ? 'Great!' : 'Back'}
+                    onClick={showAnswerClickHandler}
+                  />
+                ) : (
+                  <Button
+                    icon={inputEnded ? 'tick-circle' : 'eye-open'}
+                    intent={inputEnded ? 'primary' : 'none'}
+                    text="Show Answer"
+                    onClick={showAnswerClickHandler}
+                  />
+                )}
+              </Tooltip>
             </div>
           )}
         </div>
