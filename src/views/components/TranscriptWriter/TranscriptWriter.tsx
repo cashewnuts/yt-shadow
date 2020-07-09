@@ -57,8 +57,8 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
   check: css({
     position: 'absolute',
-    top: '5px',
-    right: '5px',
+    top: '0',
+    right: '0',
   }),
   bottomContainer: css({
     flexGrow: 0,
@@ -84,7 +84,7 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     fontSize: '16px',
     fontFamily: "'Roboto', monospace",
     margin: '0.75em 0',
-    padding: '0 1em',
+    padding: '0 1.25em 0 1em',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
@@ -340,13 +340,24 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         <div style={{ width: '80%' }}>{props.children}</div>
         <div style={{ width: '20%' }}>
           {text && (
-            <Tooltip>
-              <Button
-                icon={inputEnded ? 'confirm' : 'eye-open'}
-                text="Show Answer"
-                onClick={showAnswerClickHandler}
-              />
-            </Tooltip>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Tooltip>
+                {result.show ? (
+                  <Button
+                    icon={result.correct ? 'clean' : 'draw'}
+                    text={result.correct ? 'Great!' : 'Back'}
+                    onClick={showAnswerClickHandler}
+                  />
+                ) : (
+                  <Button
+                    icon={inputEnded ? 'tick-circle' : 'eye-open'}
+                    intent={inputEnded ? 'primary' : 'none'}
+                    text="Show Answer"
+                    onClick={showAnswerClickHandler}
+                  />
+                )}
+              </Tooltip>
+            </div>
           )}
         </div>
       </div>
