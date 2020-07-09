@@ -6,4 +6,6 @@ node_modules
 // building files
 addon/yt-shadow.js
 addon/background.js
+addon/popup/popup.js
+addon/dashboard/dashboard.js
 web-ext-artifacts/
