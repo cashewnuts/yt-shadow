@@ -19,13 +19,14 @@ import { MessageContext } from '@/contexts/MessageContext'
 import TranscriptDetails from './components/TranscriptDetails'
 import TitleLabel from './components/TitleLabel'
 import ShortcutHelp from './components/ShortcutHelp'
+import { Button } from '@blueprintjs/core'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     display: 'grid',
-    gridTemplateColumns: '10em auto',
-    gridTemplateRows: '2.5em 4px auto',
+    gridTemplateColumns: '5em auto',
+    gridTemplateRows: '2.5em 0.75em auto',
     gridTemplateAreas: `
       'header header'
       '. .'
@@ -45,12 +46,13 @@ const styles: { [key: string]: CSSProperties } = {
     width: '100%',
     height: '100%',
     backgroundColor: '#fff',
+    overflow: 'auto',
     zIndex: 1000,
   },
   helpCloseButton: {
     position: 'absolute',
-    top: '3px',
-    right: '3px',
+    top: '0.5em',
+    right: '0.5em',
   },
   header: {
     gridArea: 'header',
@@ -336,7 +338,7 @@ const App = (props: PropsWithChildren<unknown>) => {
         >
           <div style={{ ...styles.help, display: helpOpen ? 'block' : 'none' }}>
             <div style={styles.helpCloseButton}>
-              <button onClick={setHelpOpen.bind(null, false)}>close</button>
+              <Button icon="cross" onClick={setHelpOpen.bind(null, false)} />
             </div>
             <ShortcutHelp />
           </div>

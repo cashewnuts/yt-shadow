@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
 } from 'react'
 import { createLogger } from '@/helpers/logger'
+import { Slider } from '@blueprintjs/core'
 const logger = createLogger('VideoSlider.tsx')
 
 const styles: {
@@ -21,14 +22,6 @@ const styles: {
     height: '100%',
     background: '#fbfbfb',
     borderRadius: 2,
-  },
-  slider: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#afafaf',
-    boxShadow: 'rgba(0, 0, 0, 0.75) 1px 1px 1px 0px',
-    transform: 'translate(-2.5px)',
-    cursor: 'pointer',
   },
 }
 export interface VideoSliderProps {
@@ -86,8 +79,8 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
     setRangeOpen(open)
   }, [open])
 
-  const handleRangeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newCurrent = +event.target.value
+  const handleRangeChange = (value: number) => {
+    const newCurrent = value
     setCurrentTime(newCurrent)
     if (video) {
       video.currentTime = newCurrent
@@ -98,15 +91,15 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
       style={{ ...styles.detailWrapper, maxHeight: rangeOpen ? '5em' : '0' }}
     >
       <div style={styles.sliderContainer}>
-        <input
-          type="range"
+        <Slider
           min={min - 0.5}
           max={max + 0.5}
           value={currentTime}
-          step="0.001"
-          onChange={handleRangeChange}
-          style={styles.slider}
-        ></input>
+          stepSize={0.01}
+          labelPrecision={1}
+          labelStepSize={1}
+          onRelease={handleRangeChange}
+        />
       </div>
     </div>
   )
