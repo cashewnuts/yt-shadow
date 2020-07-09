@@ -4,6 +4,7 @@ import React, {
   CSSProperties,
   useState,
 } from 'react'
+import { Button, Tooltip } from '@blueprintjs/core'
 
 export interface VideoPlayerProps {
   video: HTMLVideoElement
@@ -26,9 +27,8 @@ const styles: {
     display: 'flex',
     flexDirection: 'column',
   },
-  button: {
-    height: '30px',
-    lineHeight: 1,
+  alignHorizontal: {
+    display: 'flex',
   },
 }
 
@@ -47,24 +47,28 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.playerWrapper}>
-        <button style={styles.button} onClick={props.onHelp}>
-          help
-        </button>
-        <button style={styles.button} onClick={props.onRangeOpen}>
-          range
-        </button>
-        <button style={styles.button} onClick={props.onRepeat}>
-          repeat
-        </button>
-        <button style={styles.button} onClick={props.onToggle}>
-          {isPlaying ? 'stop' : 'play'}
-        </button>
-        <button style={styles.button} onClick={props.onPrevious}>
-          previous
-        </button>
-        <button style={styles.button} onClick={props.onNext}>
-          next
-        </button>
+        <div style={styles.alignHorizontal}>
+          <Tooltip content="help">
+            <Button icon="help" onClick={props.onHelp} />
+          </Tooltip>
+          <Tooltip content="range slider">
+            <Button icon="flow-review" onClick={props.onRangeOpen} />
+          </Tooltip>
+        </div>
+        <Tooltip content="replay">
+          <Button icon="repeat" onClick={props.onRepeat} />
+        </Tooltip>
+        <Tooltip content={isPlaying ? 'stop' : 'play'}>
+          <Button icon={isPlaying ? 'stop' : 'play'} onClick={props.onToggle} />
+        </Tooltip>
+        <div style={styles.alignHorizontal}>
+          <Tooltip content="previous">
+            <Button icon="arrow-left" onClick={props.onPrevious} />
+          </Tooltip>
+          <Tooltip content="next">
+            <Button icon="arrow-right" onClick={props.onNext} />
+          </Tooltip>
+        </div>
       </div>
     </div>
   )

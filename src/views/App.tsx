@@ -24,8 +24,8 @@ const logger = createLogger('App.tsx')
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     display: 'grid',
-    gridTemplateColumns: '10em auto',
-    gridTemplateRows: '2.5em 4px auto',
+    gridTemplateColumns: '5em auto',
+    gridTemplateRows: '2.5em 0.75em auto',
     gridTemplateAreas: `
       'header header'
       '. .'

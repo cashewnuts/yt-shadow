@@ -10,6 +10,7 @@ import React, {
   SyntheticEvent,
   useCallback,
 } from 'react'
+import { Button, Tooltip } from '@blueprintjs/core'
 import { SRTMeasure } from '../../../models/srt'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -288,6 +289,9 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       event.stopPropagation()
     }
   }
+  const toggleShowDiff = () => {
+    setShowDiff(!showDiff)
+  }
   return (
     <div
       css={styles.wrapper}
@@ -299,12 +303,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-            <button
-              css={styles.diffButton}
-              onClick={() => setShowDiff(!showDiff)}
-            >
-              {showDiff ? 'correct' : 'diff'}
-            </button>
+            <Tooltip content={showDiff ? 'correct' : 'diff'}>
+              <Button
+                css={styles.diffButton}
+                icon={showDiff ? 'clean' : 'delta'}
+                onClick={toggleShowDiff}
+              />
+            </Tooltip>
           ))}
       </div>
       <div css={styles.paragraphContainer}>
@@ -335,9 +340,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
         <div style={{ width: '80%' }}>{props.children}</div>
         <div style={{ width: '20%' }}>
           {text && (
-            <div>
-              <button onClick={showAnswerClickHandler}>Show Answer</button>
-            </div>
+            <Tooltip>
+              <Button
+                icon={inputEnded ? 'confirm' : 'eye-open'}
+                text="Show Answer"
+                onClick={showAnswerClickHandler}
+              />
+            </Tooltip>
           )}
         </div>
       </div>
