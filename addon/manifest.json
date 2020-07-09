@@ -33,7 +33,6 @@
     "runtime",
     "notifications",
     "storage",
-    "tabs",
     "unlimitedStorage"
   ]
 }

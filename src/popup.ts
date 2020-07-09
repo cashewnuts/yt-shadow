@@ -1,3 +1,6 @@
 import { renderPopup } from './views/Popup'
 
-renderPopup()
+const element = document.getElementById('popup-id')
+if (element) {
+  renderPopup(element)
+}
