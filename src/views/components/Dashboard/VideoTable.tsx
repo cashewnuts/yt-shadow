@@ -20,13 +20,15 @@ const VideoTable = (props: PropsWithChildren<unknown>) => {
       setData([{ test: 'testName', world: 'worldName' }])
     }
     asyncFn()
-  }, [])
-  const handleRenderCell = (props: RenderCellProps) => {
+  }, [storageService])
+  const handleRenderCell = (
+    props: RenderCellProps<{ test: string; world: string }>
+  ) => {
     console.log(props)
     if (props.key === 'world') {
-      return <p>{`world name is ${props.value}`}</p>
+      return <p>{`world name is ${props.value as string}`}</p>
     }
-    return props.value
+    return <p>{JSON.stringify(props.object)}</p>
   }
   return (
     <BasicTable
