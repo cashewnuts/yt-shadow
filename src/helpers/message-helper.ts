@@ -2,11 +2,15 @@
 import {
   DatabaseAction,
   Message,
+  TranscriptAction,
   TranscriptBulkUpsertAction,
   TranscriptGetAllAction,
   TranscriptPatchAction,
   TranscriptGetAction,
   TranscriptFindAction,
+  VideoBulkUpsertAction,
+  VideoAction,
+  VideoUpsertAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -19,32 +23,58 @@ export function instanceOfDatabaseAction(
     object.action === 'database'
   )
 }
+
+/*
+ * Transcript Actions
+ */
+export function instanceOfTranscriptAction(
+  object: any
+): object is TranscriptAction {
+  return instanceOfDatabaseAction(object) && object.table === 'transcripts'
+}
 export function instanceOfTranscriptBulkUpsertAction(
   object: any
 ): object is TranscriptBulkUpsertAction {
-  return instanceOfDatabaseAction(object) && object.method === 'bulkUpsert'
+  return instanceOfTranscriptAction(object) && object.method === 'bulkUpsert'
 }
 export function instanceOfTranscriptGetAction(
   object: any
 ): object is TranscriptGetAction {
-  return instanceOfDatabaseAction(object) && object.method === 'get'
+  return instanceOfTranscriptAction(object) && object.method === 'get'
 }
 export function instanceOfTranscriptGetAllAction(
   object: any
 ): object is TranscriptGetAllAction {
-  return instanceOfDatabaseAction(object) && object.method === 'getAll'
+  return instanceOfTranscriptAction(object) && object.method === 'getAll'
 }
 export function instanceOfTranscriptFindAction(
   object: any
 ): object is TranscriptFindAction {
-  return instanceOfDatabaseAction(object) && object.method === 'find'
+  return instanceOfTranscriptAction(object) && object.method === 'find'
 }
 export function instanceOfTranscriptPatchAction(
   object: any
 ): object is TranscriptPatchAction {
-  return instanceOfDatabaseAction(object) && object.method === 'patch'
+  return instanceOfTranscriptAction(object) && object.method === 'patch'
 }
 
 export function instanceOfMessage(object: any): object is Message {
   return 'message' in object
+}
+
+/*
+ * Video Actions
+ */
+export function instanceOfVideoAction(object: any): object is VideoAction {
+  return instanceOfDatabaseAction(object) && object.table === 'videos'
+}
+export function instanceOfVideoUpsertAction(
+  object: any
+): object is VideoUpsertAction {
+  return instanceOfVideoAction(object) && object.method === 'upsert'
+}
+export function instanceOfVideoBulkUpsertAction(
+  object: any
+): object is VideoBulkUpsertAction {
+  return instanceOfVideoAction(object) && object.method === 'bulkUpsert'
 }

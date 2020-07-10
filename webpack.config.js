@@ -11,6 +11,8 @@ const webpackConfig = {
   entry: {
     'yt-shadow': './src/yt-shadow.ts',
     background: './src/background.ts',
+    'popup/popup': './src/popup.ts',
+    'dashboard/dashboard': './src/dashboard.ts',
   },
   output: {
     path: path.resolve(__dirname, 'addon'),
@@ -47,8 +49,8 @@ const webpackConfig = {
   },
   performance: {
     hints: 'error',
-    maxEntrypointSize: 1000000,
-    maxAssetSize: 1000000,
+    maxEntrypointSize: 3000000,
+    maxAssetSize: 3000000,
   },
   plugins: [
     new CopyWebpackPlugin({
@@ -57,6 +59,7 @@ const webpackConfig = {
           from:
             'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
         },
+        { from: 'node_modules/@blueprintjs/core/lib/css/blueprint.css' },
       ],
     }),
   ],

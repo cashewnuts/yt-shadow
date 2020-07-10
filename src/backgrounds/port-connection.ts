@@ -1,4 +1,9 @@
-import { DatabaseAction, ConnectionMessage } from '../messages'
+import {
+  DatabaseAction,
+  TranscriptAction,
+  ConnectionMessage,
+  VideoAction,
+} from '../messages'
 import {
   instanceOfDatabaseAction,
   instanceOfTranscriptBulkUpsertAction,
@@ -7,6 +12,10 @@ import {
   instanceOfTranscriptPatchAction,
   instanceOfTranscriptGetAction,
   instanceOfTranscriptFindAction,
+  instanceOfTranscriptAction,
+  instanceOfVideoBulkUpsertAction,
+  instanceOfVideoAction,
+  instanceOfVideoUpsertAction,
 } from '../helpers/message-helper'
 import { db } from '../storages/shadowing-db'
 import { createLogger } from '../helpers/logger'
@@ -16,9 +25,9 @@ const logger = createLogger('background.ts')
 
 let portFromCS: browser.runtime.Port[] = []
 
-async function databaseActionHandler(
+async function handleTranscriptAction(
   port: browser.runtime.Port,
-  action: DatabaseAction
+  action: TranscriptAction
 ) {
   if (instanceOfTranscriptBulkUpsertAction(action)) {
     let result = true
@@ -43,12 +52,17 @@ async function databaseActionHandler(
         }
         // If different from db then put or overwrite
         if (!script || item.text !== script.text) {
-          putItems.push(item)
+          putItems.push({
+            ...item,
+            createdAt: script?.createdAt || Date.now(),
+            updatedAt: Date.now(),
+          })
           continue
         }
       }
       logger.debug('bulkPut', putItems)
-      await db.transcripts.bulkPut(putItems)
+      const bulkPutResult = await db.transcripts.bulkPut(putItems)
+      logger.debug('result bulkPut', bulkPutResult)
     } catch (err) {
       result = err
       logger.error(err)
@@ -150,7 +164,7 @@ async function databaseActionHandler(
         const mergedObj = {
           ...transcript,
           ...rest,
-          createdAt,
+          createdAt: createdAt || Date.now(),
           updatedAt: Date.now(),
         }
         logger.debug('patch', mergedObj)
@@ -169,6 +183,54 @@ async function databaseActionHandler(
       method: action.method,
       value: result,
     })
+  }
+}
+
+async function handleVideoAction(
+  port: browser.runtime.Port,
+  action: VideoAction
+) {
+  if (instanceOfVideoUpsertAction(action)) {
+    const { value } = action
+    let result = null
+    try {
+      const { host, videoId } = action.value
+      const video = await db.videos.get({ host, videoId })
+      const putValue = {
+        ...value,
+        createdAt: video?.createdAt || Date.now(),
+        updatedAt: Date.now(),
+      }
+      logger.debug('upsert', value)
+      result = await db.videos.put(putValue)
+      logger.debug('result upsert', result)
+    } catch (err) {
+      result = err
+      logger.error(err)
+    }
+    port.postMessage({
+      action: action.action,
+      table: action.table,
+      method: action.method,
+      value: result,
+    })
+  } else if (instanceOfVideoBulkUpsertAction(action)) {
+    logger.error('This method of action is not implemented', action)
+  } else {
+    logger.error('This method of action is not implemented', action)
+  }
+}
+
+async function databaseActionHandler(
+  port: browser.runtime.Port,
+  action: DatabaseAction
+) {
+  if (instanceOfTranscriptAction(action)) {
+    return handleTranscriptAction(port, action)
+  } else if (instanceOfVideoAction(action)) {
+    return handleVideoAction(port, action)
+  } else {
+    logger.error('This table of action is not implemented', action)
   }
 }
 

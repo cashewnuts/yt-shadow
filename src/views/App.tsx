@@ -19,18 +19,18 @@ import { MessageContext } from '@/contexts/MessageContext'
 import TranscriptDetails from './components/TranscriptDetails'
 import TitleLabel from './components/TitleLabel'
 import ShortcutHelp from './components/ShortcutHelp'
-import { Button } from '@blueprintjs/core'
+import { Button, Card } from '@blueprintjs/core'
 const logger = createLogger('App.tsx')
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     display: 'grid',
-    gridTemplateColumns: '5em auto',
+    gridTemplateColumns: '5em 0 auto',
     gridTemplateRows: '2.5em 0.75em auto',
     gridTemplateAreas: `
-      'header header'
-      '. .'
-      'buttons main'
+      'header header header'
+      '. . .'
+      'buttons main main'
     `,
     alignContent: 'space-around',
     justifyContent: 'space-between',
@@ -84,7 +84,7 @@ enum SRTPropName {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
-  const { dbMessageService } = useContext(MessageContext)
+  const { transcriptMessage } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
   const [helpOpen, setHelpOpen] = useState(false)
   const srtRef = useRef<SRT>()
@@ -203,7 +203,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       let savedScript = null
       try {
         if (videoId && transcript && transcript.start) {
-          savedScript = await dbMessageService?.get(
+          savedScript = await transcriptMessage?.get(
             window.location.host,
             videoId,
             transcript.start
@@ -290,7 +290,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       ...value,
     }
     try {
-      const result = await dbMessageService?.patch(patchTranscript)
+      const result = await transcriptMessage?.patch(patchTranscript)
       setTranscriptState({
         text: transcript,
         done: value.done,
@@ -327,12 +327,13 @@ const App = (props: PropsWithChildren<unknown>) => {
   return (
     <AppContextConsumer>
       {({ focus }) => (
-        <div
+        <Card
+          interactive={true}
           style={{
             ...styles.wrapper,
             boxShadow: focus
               ? '0px 0px 8px rgba(208, 0, 0, 0.5)'
-              : '0px 0px 3px rgba(40, 40, 40, 0.5)',
+              : '0px 0px 4px rgba(40, 40, 40, 0.5)',
           }}
           onClick={handleClickWrapper}
         >
@@ -413,7 +414,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               />
             </TranscriptWriter>
           </div>
-        </div>
+        </Card>
       )}
     </AppContextConsumer>
   )

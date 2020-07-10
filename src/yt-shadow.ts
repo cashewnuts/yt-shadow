@@ -5,8 +5,6 @@ import { createLogger } from './helpers/logger'
 import { StorageKey, DefaultStorageObject } from './storages/browser-storage'
 const logger = createLogger('yt-shadow.ts')
 
-import '@blueprintjs/core/lib/css/blueprint.css'
-
 const APP_DOM_ID = '084f9327-d83f-4e74-bfc8-e06c4406520d'
 
 async function initOrRemove(enable: boolean) {
