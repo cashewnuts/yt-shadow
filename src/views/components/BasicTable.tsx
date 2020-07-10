@@ -7,18 +7,25 @@ export interface Column {
   render?: (name: string) => HTMLElement
 }
 
-export interface RenderCellProps {
+export interface RenderCellProps<T> {
   key: string
-  value: any
+  value: unknown
+  object: T
 }
 
-export interface TableProps {
+export interface TableProps<T> {
   columns: Column[]
-  data: any[]
-  renderCell?: (props: RenderCellProps) => HTMLElement
+  data: T[]
+  renderCell?: (props: RenderCellProps<T>) => JSX.Element
 }
 
-const BasicTable = (props: PropsWithChildren<TableProps> & IHTMLTableProps) => {
+interface StringKeyObject {
+  [key: string]: unknown
+}
+
+const BasicTable = <T extends StringKeyObject>(
+  props: PropsWithChildren<TableProps<T>> & IHTMLTableProps
+) => {
   const { columns, data, renderCell, ...rest } = props
   return (
     <HTMLTable {...rest}>
@@ -36,7 +43,11 @@ const BasicTable = (props: PropsWithChildren<TableProps> & IHTMLTableProps) => {
           <tr key={index}>
             {columns.map(({ key }) => (
               <td key={key}>
-                {renderCell ? renderCell({ key, value: d[key] }) : d[key]}
+                {renderCell ? (
+                  renderCell({ key, value: d[key], object: d })
+                ) : (
+                  <p>{d[key] + ''}</p>
+                )}
               </td>
             ))}
           </tr>
