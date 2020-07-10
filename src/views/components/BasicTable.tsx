@@ -1,39 +1,36 @@
 import React, { PropsWithChildren } from 'react'
 import { HTMLTable, IHTMLTableProps } from '@blueprintjs/core'
 
-export interface Column {
-  key: string
-  name: string
-  render?: (name: string) => HTMLElement
-}
-
-export interface RenderCellProps<T> {
-  key: string
-  value: unknown
+export interface RenderRowArgs<T> {
+  key: keyof T
+  value: T[keyof T]
   object: T
 }
 
+export interface Column<T> {
+  key: keyof T
+  name: string
+  width?: number | string
+  renderHeader?: (name: string) => HTMLElement | JSX.Element
+  renderRow?: (args: RenderRowArgs<T>) => HTMLElement | JSX.Element
+}
+
 export interface TableProps<T> {
-  columns: Column[]
+  columns: Column<T>[]
   data: T[]
-  renderCell?: (props: RenderCellProps<T>) => JSX.Element
 }
 
-interface StringKeyObject {
-  [key: string]: unknown
-}
-
-const BasicTable = <T extends StringKeyObject>(
+const BasicTable = <T extends unknown>(
   props: PropsWithChildren<TableProps<T>> & IHTMLTableProps
 ) => {
-  const { columns, data, renderCell, ...rest } = props
+  const { columns, data, ...rest } = props
   return (
     <HTMLTable {...rest}>
       <thead>
         <tr>
-          {columns.map((column) => (
-            <th key={column.key}>
-              {column.render ? column.render(column.name) : column.name}
+          {columns.map(({ key, name, width, renderHeader }) => (
+            <th key={key + ''} style={{ width }}>
+              {renderHeader ? renderHeader(name) : name}
             </th>
           ))}
         </tr>
@@ -41,10 +38,10 @@ const BasicTable = <T extends StringKeyObject>(
       <tbody>
         {data.map((d, index) => (
           <tr key={index}>
-            {columns.map(({ key }) => (
-              <td key={key}>
-                {renderCell ? (
-                  renderCell({ key, value: d[key], object: d })
+            {columns.map(({ key, renderRow }) => (
+              <td key={key + ''}>
+                {renderRow ? (
+                  renderRow({ key, value: d[key], object: d })
                 ) : (
                   <p>{d[key] + ''}</p>
                 )}

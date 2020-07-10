@@ -10,7 +10,7 @@ export default class ShadowingDatabase extends Dexie {
     super('ShadowingDatabase')
     this.version(1).stores({
       transcripts: '[host+videoId+start], [host+videoId], *words',
-      videos: '[host+videoId], host, *words',
+      videos: '[host+videoId], host, *words, updatedAt',
     })
     // The following line is needed if your typescript
     // is compiled using babel instead of tsc:
@@ -29,6 +29,7 @@ export interface VideoIndex {
   host: string
   videoId: string
   words?: string[]
+  updatedAt: number
 }
 
 export const db = new ShadowingDatabase()
