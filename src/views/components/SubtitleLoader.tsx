@@ -23,6 +23,25 @@ const getTimedTextUrl = (lang = 'en', v: string) => {
   return `http://video.google.com/timedtext?lang=${lang}&v=${v}`
 }
 
+const getYoutubeTitle = async () => {
+  const suffix = ' - YouTube'
+  return new Promise<string>((resolve, reject) => {
+    let count = 0
+    const tryResolve = () => {
+      count++
+      const title = document.title
+      const lastIndex = title.lastIndexOf(suffix)
+      if (lastIndex > 0) {
+        return resolve(title.substring(0, lastIndex))
+      } else if (count > 10) {
+        return reject(new Error(`Cannot get title of YouTube: ${title}`))
+      }
+      setTimeout(tryResolve, 100)
+    }
+    tryResolve()
+  })
+}
+
 const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
@@ -62,17 +81,15 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
             })
         )
         const resultUpsert = await transcriptMessage?.bulkUpsert(transcripts)
+        logger.debug('result: bulkUpsert', resultUpsert)
         await videoMessage?.upsert(
           new Video({
             host,
             videoId,
-            title: document.title,
+            title: await getYoutubeTitle(),
             url: href,
           })
         )
-        logger.debug('result: bulkUpsert', resultUpsert)
-        const result = await transcriptMessage?.getAll(host, videoId)
-        logger.debug('result: get', result)
       } catch (err) {
         if (onError) {
           onError(err)
