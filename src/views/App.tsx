@@ -84,7 +84,7 @@ enum SRTPropName {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
-  const { dbMessageService } = useContext(MessageContext)
+  const { transcriptMessage } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
   const [helpOpen, setHelpOpen] = useState(false)
   const srtRef = useRef<SRT>()
@@ -203,7 +203,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       let savedScript = null
       try {
         if (videoId && transcript && transcript.start) {
-          savedScript = await dbMessageService?.get(
+          savedScript = await transcriptMessage?.get(
             window.location.host,
             videoId,
             transcript.start
@@ -290,7 +290,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       ...value,
     }
     try {
-      const result = await dbMessageService?.patch(patchTranscript)
+      const result = await transcriptMessage?.patch(patchTranscript)
       setTranscriptState({
         text: transcript,
         done: value.done,

@@ -20,8 +20,8 @@ export default class Video implements IVideo {
   title: string
   url: string
   dur?: number
-  createdAt: number
-  updatedAt: number
+  createdAt?: number
+  updatedAt?: number
   constructor({
     host,
     videoId,
@@ -46,7 +46,7 @@ export default class Video implements IVideo {
           {}
         )
       )
-    this.createdAt = createdAt || Date.now()
-    this.updatedAt = updatedAt || Date.now()
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
   }
 }

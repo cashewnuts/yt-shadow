@@ -114,7 +114,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     text ? text.words.map((w) => new WordProcessor(w)) : []
   )
   const { setFocus } = useContext(AppContext)
-  const { dbMessageService } = useContext(MessageContext)
+  const { transcriptMessage } = useContext(MessageContext)
   const { config: shortcutConfig } = useContext(ShortcutContext)
 
   const toggleAnswer = () => {
@@ -156,7 +156,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     const asyncFn = async () => {
       if (!videoId) return
       try {
-        const transcript = await dbMessageService?.get(
+        const transcript = await transcriptMessage?.get(
           window.location.host,
           videoId,
           text.start
@@ -196,7 +196,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       }
     }
     asyncFn()
-  }, [dbMessageService?.get, text, videoId])
+  }, [transcriptMessage?.get, text, videoId])
   useEffect(() => {
     emitOnInput()
   }, [emitOnInput])
