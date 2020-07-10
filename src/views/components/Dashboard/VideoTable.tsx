@@ -32,7 +32,7 @@ const VideoTable = (props: PropsWithChildren<unknown>) => {
     },
     {
       key: 'updatedAt',
-      name: 'Update At',
+      name: 'Updated At',
       renderRow: (row) => <p>{new Date(row.value as number).toISOString()}</p>,
     },
     {
