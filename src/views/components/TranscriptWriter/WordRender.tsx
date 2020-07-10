@@ -59,7 +59,7 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     return result.s ? styles.wrong : styles.notInput
   }
   return (
-    <span>
+    <pre>
       {type === 'mask' &&
         chars.map((rslt, index) => (
           <i
@@ -88,6 +88,6 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
             {rslt.w}
           </i>
         ))}
-    </span>
+    </pre>
   )
 }

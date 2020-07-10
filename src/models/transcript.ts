@@ -27,8 +27,8 @@ export default class Transcript implements ITranscript {
   public done: boolean
   public skip: boolean
   public correct: boolean
-  public createdAt: number
-  public updatedAt: number
+  public createdAt?: number
+  public updatedAt?: number
 
   public static mergeObject(...transcripts: ITranscript[]) {
     const [first, ...rest] = transcripts
@@ -54,6 +54,7 @@ export default class Transcript implements ITranscript {
       host,
       videoId,
       start,
+      words,
       dur,
       text,
       answer,
@@ -66,22 +67,24 @@ export default class Transcript implements ITranscript {
     this.host = host
     this.videoId = videoId
     this.start = start
-    this.words = Object.keys(
-      splitTextIntoWords(text).reduce(
-        (wordObj: { [key: string]: boolean }, word) => {
-          wordObj[word] = true
-          return wordObj
-        },
-        {}
+    this.words =
+      words ||
+      Object.keys(
+        splitTextIntoWords(text).reduce(
+          (wordObj: { [key: string]: boolean }, word) => {
+            wordObj[word] = true
+            return wordObj
+          },
+          {}
+        )
       )
-    )
     this.dur = dur
     this.text = text
     this.answer = answer || ''
     this.done = done || false
     this.skip = skip || false
     this.correct = correct || false
-    this.createdAt = createdAt || Date.now()
-    this.updatedAt = updatedAt || Date.now()
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
   }
 }

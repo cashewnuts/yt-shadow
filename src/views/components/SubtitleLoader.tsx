@@ -9,6 +9,7 @@ import SRT from '../../models/srt'
 import Transcript from '@/models/transcript'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
+import Video from '@/models/video'
 const logger = createLogger('SubtitleLoader.tsx')
 
 export interface SubtitleLoaderProps {
@@ -22,11 +23,30 @@ const getTimedTextUrl = (lang = 'en', v: string) => {
   return `http://video.google.com/timedtext?lang=${lang}&v=${v}`
 }
 
+const getYoutubeTitle = async () => {
+  const suffix = ' - YouTube'
+  return new Promise<string>((resolve, reject) => {
+    let count = 0
+    const tryResolve = () => {
+      count++
+      const title = document.title
+      const lastIndex = title.lastIndexOf(suffix)
+      if (lastIndex > 0) {
+        return resolve(title.substring(0, lastIndex))
+      } else if (count > 10) {
+        return reject(new Error(`Cannot get title of YouTube: ${title}`))
+      }
+      setTimeout(tryResolve, 100)
+    }
+    tryResolve()
+  })
+}
+
 const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
   const { videoId, onSRTLoaded, onError } = props
-  const { dbMessageService } = useContext(MessageContext)
+  const { transcriptMessage, videoMessage } = useContext(MessageContext)
 
   useEffect(() => {
     const asyncFn = async () => {
@@ -49,7 +69,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
         logger.debug('xml', xml)
         const srt = new SRT(xml)
         onSRTLoaded(srt)
-        const host = window.location.host
+        const { host, href } = window.location
         const transcripts = srt.texts.map(
           (t) =>
             new Transcript({
@@ -60,10 +80,16 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
               dur: t.dur,
             })
         )
-        const resultUpsert = await dbMessageService?.bulkUpsert(transcripts)
+        const resultUpsert = await transcriptMessage?.bulkUpsert(transcripts)
         logger.debug('result: bulkUpsert', resultUpsert)
-        const result = await dbMessageService?.getAll(host, videoId)
-        logger.debug('result: get', result)
+        await videoMessage?.upsert(
+          new Video({
+            host,
+            videoId,
+            title: await getYoutubeTitle(),
+            url: href,
+          })
+        )
       } catch (err) {
         if (onError) {
           onError(err)
