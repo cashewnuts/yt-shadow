@@ -73,3 +73,5 @@ const Popup = (props: PropsWithChildren<unknown>) => {
     </div>
   )
 }
+
+export default Popup
