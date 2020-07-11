@@ -1,5 +1,5 @@
 export const WHITE_SPACE = '\u00A0'
-export const SYMBOLS = ',.?<>/!@#$%^&*()-=_+[]{}|:;\'"'
+export const SYMBOLS = ',.?<>/!@#$%^&*()-‑=_+[]{}|:;\'"'
 
 export const checkBePunctuated = (str: string): boolean => {
   return /[.?!"]$/.test(str)
