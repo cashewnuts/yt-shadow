@@ -8,7 +8,7 @@ export default class ShadowingDatabase extends Dexie {
 
   constructor() {
     super('ShadowingDatabase')
-    this.version(1).stores({
+    this.version(2).stores({
       transcripts: '[host+videoId+start], [host+videoId], *words',
       videos: '[host+videoId], host, *words, updatedAt',
     })
