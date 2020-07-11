@@ -33,7 +33,7 @@ const styles: { [key: string]: CSSProperties } = {
     padding: '1em 0.5em',
   },
   helpItem: {
-    height: '3em',
+    height: '1.5em',
     marginBottom: '0.5em',
     display: 'flex',
   },

@@ -21,7 +21,7 @@ export interface TranscriptDetailsProps {
 const TranscriptDetails = (
   props: PropsWithChildren<TranscriptDetailsProps>
 ) => {
-  const { dbMessageService } = useContext(MessageContext)
+  const { transcriptMessage } = useContext(MessageContext)
   const { text, videoId, state } = props
   const [infos, setInfos] = useState({
     doneCount: 0,
@@ -29,9 +29,9 @@ const TranscriptDetails = (
   })
 
   useEffect(() => {
-    if (!text || !videoId || !dbMessageService) return
+    if (!text || !videoId || !transcriptMessage) return
     const asyncFn = async () => {
-      const totalScripts = await dbMessageService.find(
+      const totalScripts = await transcriptMessage.find(
         window.location.host,
         videoId,
         {
@@ -48,10 +48,10 @@ const TranscriptDetails = (
       })
     }
     asyncFn()
-  }, [dbMessageService, text, videoId])
+  }, [transcriptMessage, text, videoId])
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <p>
+      <p style={{ margin: 'auto' }}>
         {infos.doneCount + (state?.done && state.correct ? 1 : 0)}/
         <b>{infos.totalLength}</b>
       </p>
