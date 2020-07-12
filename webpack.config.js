@@ -67,9 +67,7 @@ const webpackConfig = {
 if (NODE_ENV === 'development') {
   webpackConfig.devtool = 'inline-source-map'
   webpackConfig.performance = {
-    hints: 'warning',
-    maxEntrypointSize: 5000000,
-    maxAssetSize: 5000000,
+    hints: false,
   }
 }
 
