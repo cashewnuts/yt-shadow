@@ -59,7 +59,6 @@ const webpackConfig = {
           from:
             'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
         },
-        { from: 'node_modules/@blueprintjs/core/lib/css/blueprint.css' },
       ],
     }),
   ],
