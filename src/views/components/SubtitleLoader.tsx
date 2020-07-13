@@ -78,6 +78,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
               start: t.start,
               text: t.text,
               dur: t.dur,
+              skip: !t.spoken,
             })
         )
         const resultUpsert = await transcriptMessage?.bulkUpsert(transcripts)

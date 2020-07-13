@@ -218,8 +218,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       } catch (err) {
         logger.error(err)
       }
-      logger.debug('savedScript', savedScript?.done, savedScript?.skip)
-      if (!savedScript || (!savedScript.done && !savedScript.skip)) {
+      logger.debug('savedScript', savedScript?.correct, savedScript?.skip)
+      if (!savedScript || (!savedScript.correct && !savedScript.skip)) {
         const timeoutId = window.setTimeout(() => {
           videoRef.current?.pause()
         }, appState.waitMillisec)
