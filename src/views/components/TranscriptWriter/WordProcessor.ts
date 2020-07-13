@@ -42,6 +42,12 @@ export class WordProcessor {
   get end() {
     return this.results.every((r) => Boolean(r.s || !r.spoken))
   }
+  get wordText() {
+    return this.results
+      .map(({ w }) => w)
+      .filter(Boolean)
+      .join('')
+  }
   get answerText() {
     return this.results
       .map(({ s }) => s)
