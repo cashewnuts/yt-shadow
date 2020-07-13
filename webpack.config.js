@@ -59,7 +59,6 @@ const webpackConfig = {
           from:
             'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
         },
-        { from: 'node_modules/@blueprintjs/core/lib/css/blueprint.css' },
       ],
     }),
   ],
@@ -68,9 +67,7 @@ const webpackConfig = {
 if (NODE_ENV === 'development') {
   webpackConfig.devtool = 'inline-source-map'
   webpackConfig.performance = {
-    hints: 'warning',
-    maxEntrypointSize: 5000000,
-    maxAssetSize: 5000000,
+    hints: false,
   }
 }
 

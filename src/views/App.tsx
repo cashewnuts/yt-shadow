@@ -109,9 +109,11 @@ const App = (props: PropsWithChildren<unknown>) => {
     text?: SRTMeasure
     done: boolean
     correct: boolean
+    skip: boolean
   }>({
     done: false,
     correct: false,
+    skip: false,
   })
   const [rangeOpen, setRangeOpen] = useState(false)
   const [hasInputFocus, setInputFocus] = useState(false)
@@ -192,9 +194,13 @@ const App = (props: PropsWithChildren<unknown>) => {
     const matchedScript = (prop as Array<SRTMeasure>).find(
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
-    logger.debug('pauseTimeoutId', appState.pauseTimeoutId)
+    logger.debug('state on TimeUpdate', appState, transcriptState)
     if (!matchedScript || appState.pauseTimeoutId) return
-    if (hasInputFocus && matchedScript !== transcript) {
+    if (
+      hasInputFocus &&
+      matchedScript !== transcript &&
+      !transcriptState.skip
+    ) {
       // set dummy pauseTimeoutId
       setAppState({
         ...appState,
@@ -212,8 +218,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       } catch (err) {
         logger.error(err)
       }
-      logger.debug('savedScript', savedScript?.done, savedScript?.skip)
-      if (!savedScript || (!savedScript.done && !savedScript.skip)) {
+      logger.debug('savedScript', savedScript?.correct, savedScript?.skip)
+      if (!savedScript || (!savedScript.correct && !savedScript.skip)) {
         const timeoutId = window.setTimeout(() => {
           videoRef.current?.pause()
         }, appState.waitMillisec)
@@ -292,6 +298,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     try {
       const result = await transcriptMessage?.patch(patchTranscript)
       setTranscriptState({
+        ...transcriptState,
         text: transcript,
         done: value.done,
         correct: value.correct,
@@ -302,6 +309,29 @@ const App = (props: PropsWithChildren<unknown>) => {
       })
     } catch (err) {
       logger.error('dbMessageService.patch for input', err)
+    }
+  }
+  const handleSkip = async (skip: boolean) => {
+    logger.debug('skip', skip)
+    if (!transcript || !videoId) return
+    const patchTranscript = {
+      host: window.location.host,
+      videoId,
+      start: transcript.start,
+      skip,
+    }
+    try {
+      const result = await transcriptMessage?.patch(patchTranscript)
+      setTranscriptState({
+        ...transcriptState,
+        skip,
+      })
+      logger.info('dbMessageService.patch for skip', {
+        patchTranscript,
+        result,
+      })
+    } catch (err) {
+      logger.error('dbMessageService.patch for skip', err)
     }
   }
   const handleHelp = () => {
@@ -404,6 +434,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               onNext={handleNextPrevTranscript(1)}
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
+              onSkip={handleSkip}
               onHelp={handleHelp}
               onEscape={handleEscape}
             >

@@ -11,6 +11,7 @@ export enum ShortcutKey {
   NEXT = '06.next',
   RANGEOPEN = '07.rangeopen',
   TOGGLE_ANSWER = '11.toggle-answer',
+  SKIP = '12.skip',
   HELP = '91.help',
 }
 
@@ -77,6 +78,10 @@ export const DefaultShortcutConfig: ShortcutConfig = {
   [ShortcutKey.TOGGLE_ANSWER]: {
     shortcuts: [makeShortcutObject({ key: 'o', ctrlKey: true })],
     info: 'Toggle show answer',
+  },
+  [ShortcutKey.SKIP]: {
+    shortcuts: [makeShortcutObject({ key: 's', ctrlKey: true })],
+    info: 'Skip',
   },
   [ShortcutKey.HELP]: {
     shortcuts: [makeShortcutObject({ key: '/', ctrlKey: true })],
