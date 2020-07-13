@@ -128,6 +128,14 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     })
   }
 
+  const skipToggleHandler = () => {
+    const skip = !result.skip
+    setResult({
+      ...result,
+      skip,
+    })
+    props.onSkip?.call(null, skip)
+  }
   const shortcutEvents = {
     [ShortcutKey.PLAY]: props.onPlay,
     [ShortcutKey.PAUSE]: props.onPause,
@@ -137,6 +145,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     [ShortcutKey.NEXT]: props.onNext,
     [ShortcutKey.RANGEOPEN]: props.onRangeOpen,
     [ShortcutKey.TOGGLE_ANSWER]: toggleAnswer,
+    [ShortcutKey.SKIP]: skipToggleHandler,
     [ShortcutKey.HELP]: props.onHelp,
   }
 
@@ -164,7 +173,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           text.start
         )
         logger.debug('dbMessageService.get', transcript)
-        if (transcript && transcript.answer) {
+        if (transcript) {
           const answer = transcript.answer || ''
           let str = answer
           for (const wordProcessor of wordProcessors) {
@@ -175,11 +184,14 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           setWordProcessors(wordProcessors)
           setInputValue(answer)
           setShowDiff(false)
+          const skip = transcript.skip || false
           setResult({
             ...result,
             show: transcript.done || false,
             correct: transcript.correct || false,
+            skip,
           })
+          props.onSkip?.call(null, skip)
         } else {
           setWordProcessors(wordProcessors)
           setInputValue('')
@@ -191,6 +203,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
             skip: false,
           })
         }
+        emitOnInput()
       } catch (err) {
         setWordProcessors(wordProcessors)
         setInputValue('')
@@ -206,9 +219,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     }
     asyncFn()
   }, [transcriptMessage?.get, text, videoId])
-  useEffect(() => {
-    emitOnInput()
-  }, [emitOnInput])
 
   const updateWordProcessorInput = (str: string) => {
     for (const wordProcessor of wordProcessors) {
@@ -282,20 +292,15 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       stopPrevents()
       toggleAnswer()
     }
+    if (result.skip) {
+      stopPrevents()
+    }
   }
   const showAnswerClickHandler = () => {
     setResult({
       ...result,
       show: !result.show,
     })
-  }
-  const skipClickHandler = () => {
-    const skip = !result.skip
-    setResult({
-      ...result,
-      skip,
-    })
-    props.onSkip?.call(null, skip)
   }
   const makeItCorrectHandler = () => {
     const answer = wordProcessors
@@ -351,7 +356,11 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           ))}
       </div>
       <div css={styles.paragraphContainer}>
-        <div css={styles.paragraph} onClick={handleParagraphClick}>
+        <div
+          css={styles.paragraph}
+          style={{ opacity: result.skip ? 0.2 : 1 }}
+          onClick={handleParagraphClick}
+        >
           {(inputValue || result.show || true) &&
             wordProcessors.map((wp) => (
               <div css={styles.word} key={wp.key}>
@@ -384,7 +393,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
                   <Button
                     icon={result.skip ? 'lightbulb' : 'eject'}
                     text={result.skip ? 'unskip' : 'skip'}
-                    onClick={skipClickHandler}
+                    onClick={skipToggleHandler}
                   />
                 </Tooltip>
               )}
