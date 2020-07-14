@@ -1,5 +1,11 @@
 # Change log
 
+## 0.2.2
+
+- Implement skip and MakeItCorrect button.
+- Fix youtube style collapses.
+- Fix bugs.
+
 ## 0.2.0 / 0.2.1
 
 - Styling with blueprint UI toolkit
