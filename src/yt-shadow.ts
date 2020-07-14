@@ -39,12 +39,13 @@ async function main() {
       changes: browser.storage.ChangeDict,
       areaName: browser.storage.StorageName
     ) => {
+      logger.debug('browser.storage.onChange', changes, areaName)
       if (areaName === 'local') {
         const changedItems = Object.keys(changes)
         for (const item of changedItems) {
           if (item === StorageKey.SETTING) {
             const setting = changes[item]
-            const { oldValue, newValue } = setting
+            const { oldValue = { active: true }, newValue } = setting
             if (oldValue.active !== newValue.active) {
               initOrRemove(newValue.active || false)
             }

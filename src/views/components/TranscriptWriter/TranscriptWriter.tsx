@@ -307,7 +307,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       .map((wp) => wp.wordText)
       .join(' ')
       .trim()
-    console.log('answer', answer)
     updateWordProcessorInput(answer)
     setInputValue(answer)
     setResult({
