@@ -32,6 +32,7 @@
     "*://video.google.com/*",
     "notifications",
     "storage",
+    "tabs",
     "unlimitedStorage"
   ]
 }

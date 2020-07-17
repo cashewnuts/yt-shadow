@@ -5,14 +5,12 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react'
-import DatabaseMessageService from '@/services/database-message-service'
 import { createLogger } from '@/helpers/logger'
 const logger = createLogger('AppContext.tsx')
 
 export interface AppContextParams {
   focus: boolean
   setFocus: Dispatch<SetStateAction<boolean>>
-  dbMessageService?: DatabaseMessageService
 }
 
 export const AppContext = createContext<AppContextParams>({
