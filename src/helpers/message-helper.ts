@@ -11,6 +11,7 @@ import {
   VideoBulkUpsertAction,
   VideoAction,
   VideoUpsertAction,
+  RequestAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -77,4 +78,11 @@ export function instanceOfVideoBulkUpsertAction(
   object: any
 ): object is VideoBulkUpsertAction {
   return instanceOfVideoAction(object) && object.method === 'bulkUpsert'
+}
+
+/*
+ * Request Action
+ */
+export function instanceOfRequestAction(object: any): object is RequestAction {
+  return 'action' in object && 'contentType' in object && 'url' in object
 }

@@ -1,11 +1,9 @@
-import { render, unmount } from './views'
+import { render, unmount, APP_DOM_ID } from './views'
 import { getElementAsync } from './helpers/dependency-helper'
 import './polyfill'
 import { createLogger } from './helpers/logger'
 import { StorageKey, DefaultStorageObject } from './storages/browser-storage'
 const logger = createLogger('yt-shadow.ts')
-
-const APP_DOM_ID = '084f9327-d83f-4e74-bfc8-e06c4406520d'
 
 async function initOrRemove(enable: boolean) {
   logger.info('Addon active state change', enable)

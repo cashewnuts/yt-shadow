@@ -3,6 +3,7 @@ import {
   TranscriptAction,
   ConnectionMessage,
   VideoAction,
+  RequestAction,
 } from '../messages'
 import {
   instanceOfDatabaseAction,
@@ -16,6 +17,7 @@ import {
   instanceOfVideoBulkUpsertAction,
   instanceOfVideoAction,
   instanceOfVideoUpsertAction,
+  instanceOfRequestAction,
 } from '../helpers/message-helper'
 import { db } from '../storages/shadowing-db'
 import { createLogger } from '../helpers/logger'
@@ -234,6 +236,26 @@ async function databaseActionHandler(
   }
 }
 
+async function requestActionHandler(
+  port: browser.runtime.Port,
+  action: RequestAction
+) {
+  let result = null
+  const { url } = action
+  try {
+    const response = await fetch(url)
+    result = await response[action.contentType]()
+  } catch (err) {
+    result = err
+  }
+  port.postMessage({
+    action: action.action,
+    contentType: action.contentType,
+    url: action.url,
+    value: result,
+  })
+}
+
 export function connected(p: browser.runtime.Port) {
   p.postMessage<ConnectionMessage>({
     message: 'from background script!',
@@ -241,6 +263,8 @@ export function connected(p: browser.runtime.Port) {
   const onMessageHandler = async (obj: unknown) => {
     if (instanceOfDatabaseAction(obj)) {
       await databaseActionHandler(p, obj)
+    } else if (instanceOfRequestAction(obj)) {
+      await requestActionHandler(p, obj)
     } else if (instanceOfMessage(obj)) {
       logger.info(obj.message)
     }
