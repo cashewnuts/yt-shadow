@@ -30,7 +30,6 @@
   },
   "permissions": [
     "*://video.google.com/*",
-    "runtime",
     "notifications",
     "storage",
     "unlimitedStorage"

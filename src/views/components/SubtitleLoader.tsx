@@ -20,7 +20,7 @@ export interface SubtitleLoaderProps {
 }
 
 const getTimedTextUrl = (lang = 'en', v: string) => {
-  return `http://video.google.com/timedtext?lang=${lang}&v=${v}`
+  return `https://video.google.com/timedtext?lang=${lang}&v=${v}`
 }
 
 const getYoutubeTitle = async () => {
