@@ -46,7 +46,9 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
   const { videoId, onSRTLoaded, onError } = props
-  const { transcriptMessage, videoMessage } = useContext(MessageContext)
+  const { transcriptMessage, videoMessage, requestMessage } = useContext(
+    MessageContext
+  )
 
   useEffect(() => {
     const asyncFn = async () => {
@@ -58,9 +60,8 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
       try {
         const url = getTimedTextUrl('en', videoId)
         logger.debug('transcript url', url)
-        const response = await fetch(url)
-        const text = await response.text()
-        const xml = await parseStringPromise(text)
+        const responseText = await requestMessage?.getText(url)
+        const xml = await parseStringPromise(responseText || '')
         setLoading(false)
         if (!xml) {
           setSubtitleNotExists(true)
