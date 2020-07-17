@@ -25,12 +25,14 @@ const logger = createLogger('App.tsx')
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
     display: 'grid',
-    gridTemplateColumns: '5em 0 auto',
-    gridTemplateRows: '2.5em 0.75em auto',
+    gridTemplateColumns: '1fr 9fr',
+    gridTemplateRows: '2.5em auto',
+    gridColumnGap: 0,
+    gridRowGap: '0.5em',
     gridTemplateAreas: `
-      'header header header'
-      '. . .'
-      'buttons main main'
+      'header header'
+      '. .'
+      'buttons main'
     `,
     alignContent: 'space-around',
     justifyContent: 'space-between',
