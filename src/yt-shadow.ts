@@ -17,6 +17,7 @@ async function initOrRemove(enable: boolean) {
       appDiv = document.createElement('div')
       appDiv.id = APP_DOM_ID
     }
+    appDiv.classList.add('yt-shadow')
     if (infoContents) {
       logger.info('Init', infoContents, appDiv)
       infoContents.insertAdjacentElement('beforebegin', appDiv)
