@@ -223,8 +223,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       } catch (err) {
         logger.error(err)
       }
-      logger.debug('savedScript', savedScript?.correct, savedScript?.skip)
-      if (!savedScript || (!savedScript.correct && !savedScript.skip)) {
+      logger.debug('savedScript', savedScript?.correct, savedScript?.done, savedScript?.skip)
+      if (!savedScript || (!(savedScript.correct && savedScript.done) && !savedScript.skip)) {
         const timeoutId = window.setTimeout(() => {
           videoRef.current?.pause()
         }, appState.waitMillisec)
@@ -297,20 +297,29 @@ const App = (props: PropsWithChildren<unknown>) => {
       autoStop: !appState.autoStop,
     })
   }
-  const handleTranscriptInput = async (value: onInputType) => {
+  const handleLoadTranscriptWriter = (text: SRTMeasure, value: onInputType) => {
+    setTranscriptState({
+      ...transcriptState,
+      text: text,
+      done: value.done,
+      correct: value.correct,
+      skip: value.skip || false,
+    })
+  }
+  const handleTranscriptInput = async (text: SRTMeasure, value: onInputType) => {
     logger.debug('handleTranscriptInput', value)
     if (!transcript || !videoId) return
     const patchTranscript = {
       host: window.location.host,
       videoId,
-      start: transcript.start,
+      start: text.start,
       ...value,
     }
     try {
       const result = await transcriptMessage?.patch(patchTranscript)
       setTranscriptState({
         ...transcriptState,
-        text: transcript,
+        text,
         done: value.done,
         correct: value.correct,
         skip: value.skip || false,
@@ -442,6 +451,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               inputRef={inputRef}
               onFocus={(focus) => setInputFocus(focus)}
               onRangeOpen={handleRangeOpen}
+              onLoad={handleLoadTranscriptWriter}
               onPlay={handlePlayPauseOnTranscriptWriter(true)}
               onPause={handlePlayPauseOnTranscriptWriter(false)}
               onRepeat={handleRepeatVideo}
