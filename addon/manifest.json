@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "YtShadow",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Shadowing extensions for youtube",
   "icons": {
     "24": "icons/yt-24.png",
@@ -9,13 +9,23 @@
     "96": "icons/yt-96.png"
   },
   "background": {
-    "scripts": ["browser-polyfill.min.js", "background.js"]
+    "scripts": [
+      "browser-polyfill.min.js",
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
-      "js": ["browser-polyfill.min.js", "yt-shadow.js"],
-      "css": ["css/yt-blueprint.css"]
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "browser-polyfill.min.js",
+        "yt-shadow.js"
+      ],
+      "css": [
+        "css/yt-blueprint.css"
+      ]
     }
   ],
   "browser_action": {
