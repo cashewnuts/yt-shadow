@@ -101,10 +101,12 @@ const App = (props: PropsWithChildren<unknown>) => {
     pauseTimeoutId: number | null
     waitMillisec: number
     srtGrainSize: SRTPropName
+    autoStop: boolean
   }>({
     pauseTimeoutId: null,
     waitMillisec: 100,
     srtGrainSize: SRTPropName.texts,
+    autoStop: true,
   })
   const [transcript, setTranscript] = useState<SRTMeasure>()
   const [transcriptState, setTranscriptState] = useState<{
@@ -200,6 +202,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     if (!matchedScript || appState.pauseTimeoutId) return
     if (
       hasInputFocus &&
+      appState.autoStop &&
       matchedScript !== transcript &&
       !transcriptState.skip
     ) {
@@ -220,8 +223,8 @@ const App = (props: PropsWithChildren<unknown>) => {
       } catch (err) {
         logger.error(err)
       }
-      logger.debug('savedScript', savedScript?.correct, savedScript?.skip)
-      if (!savedScript || (!savedScript.correct && !savedScript.skip)) {
+      logger.debug('savedScript', savedScript?.correct, savedScript?.done, savedScript?.skip)
+      if (!savedScript || (!(savedScript.correct && savedScript.done) && !savedScript.skip)) {
         const timeoutId = window.setTimeout(() => {
           videoRef.current?.pause()
         }, appState.waitMillisec)
@@ -288,22 +291,38 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
-  const handleTranscriptInput = async (value: onInputType) => {
+  const handleAutoStopToggle = () => {
+    setAppState({
+      ...appState,
+      autoStop: !appState.autoStop,
+    })
+  }
+  const handleLoadTranscriptWriter = (text: SRTMeasure, value: onInputType) => {
+    setTranscriptState({
+      ...transcriptState,
+      text: text,
+      done: value.done,
+      correct: value.correct,
+      skip: value.skip || false,
+    })
+  }
+  const handleTranscriptInput = async (text: SRTMeasure, value: onInputType) => {
     logger.debug('handleTranscriptInput', value)
     if (!transcript || !videoId) return
     const patchTranscript = {
       host: window.location.host,
       videoId,
-      start: transcript.start,
+      start: text.start,
       ...value,
     }
     try {
       const result = await transcriptMessage?.patch(patchTranscript)
       setTranscriptState({
         ...transcriptState,
-        text: transcript,
+        text,
         done: value.done,
         correct: value.correct,
+        skip: value.skip || false,
       })
       logger.info('dbMessageService.patch for input', {
         patchTranscript,
@@ -388,11 +407,13 @@ const App = (props: PropsWithChildren<unknown>) => {
               render={(video) => (
                 <VideoPlayer
                   video={video}
+                  autoStop={appState.autoStop}
                   onToggle={handleToggleOnVideoPlayer}
                   onRangeOpen={handleRangeOpen}
                   onRepeat={handleRepeatVideo}
                   onNext={handleNextPrevTranscript(1)}
                   onPrevious={handleNextPrevTranscript(-1)}
+                  onAutoStopToggle={handleAutoStopToggle}
                   onHelp={handleHelp}
                 />
               )}
@@ -430,6 +451,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               inputRef={inputRef}
               onFocus={(focus) => setInputFocus(focus)}
               onRangeOpen={handleRangeOpen}
+              onLoad={handleLoadTranscriptWriter}
               onPlay={handlePlayPauseOnTranscriptWriter(true)}
               onPause={handlePlayPauseOnTranscriptWriter(false)}
               onRepeat={handleRepeatVideo}
@@ -437,6 +459,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
               onSkip={handleSkip}
+              onAutoStop={handleAutoStopToggle}
               onHelp={handleHelp}
               onEscape={handleEscape}
             >
