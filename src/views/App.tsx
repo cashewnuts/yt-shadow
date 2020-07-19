@@ -106,7 +106,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     pauseTimeoutId: null,
     waitMillisec: 100,
     srtGrainSize: SRTPropName.texts,
-    autoStop: false,
+    autoStop: true,
   })
   const [transcript, setTranscript] = useState<SRTMeasure>()
   const [transcriptState, setTranscriptState] = useState<{
