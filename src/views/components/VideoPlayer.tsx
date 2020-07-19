@@ -8,11 +8,13 @@ import { Button, Tooltip } from '@blueprintjs/core'
 
 export interface VideoPlayerProps {
   video: HTMLVideoElement
+  autoStop: boolean
   onToggle?: () => void
   onNext?: () => void
   onPrevious?: () => void
   onRangeOpen?: () => void
   onRepeat?: () => void
+  onAutoStopToggle?: () => void
   onHelp?: () => void
 }
 
@@ -33,7 +35,7 @@ const styles: {
 }
 
 const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
-  const { video } = props
+  const { video, autoStop } = props
   const [isPlaying, setIsPlaying] = useState(!video.paused)
   useEffect(() => {
     video.addEventListener('playing', () => {
@@ -55,9 +57,14 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
             <Button icon="flow-review" onClick={props.onRangeOpen} />
           </Tooltip>
         </div>
-        <Tooltip content="replay">
-          <Button icon="repeat" onClick={props.onRepeat} />
-        </Tooltip>
+        <div style={styles.alignHorizontal}>
+          <Tooltip content="replay">
+            <Button icon="redo" onClick={props.onRepeat} />
+          </Tooltip>
+          <Tooltip content={autoStop ? "Disable AutoStop" : "AutoStop"}>
+            <Button icon={autoStop ? "stopwatch" : "automatic-updates"} intent={autoStop ? "primary" : "none"} onClick={props.onAutoStopToggle} />
+          </Tooltip>
+        </div>
         <Tooltip content={isPlaying ? 'stop' : 'play'}>
           <Button icon={isPlaying ? 'stop' : 'play'} onClick={props.onToggle} />
         </Tooltip>

@@ -1,5 +1,12 @@
 # Change log
 
+## 0.2.3
+
+- Auto-stop is now configuable
+- Porting to chorme extension
+- Fix css pollusion
+- Fix video auto-stop failure
+
 ## 0.2.2
 
 - Implement skip and MakeItCorrect button.

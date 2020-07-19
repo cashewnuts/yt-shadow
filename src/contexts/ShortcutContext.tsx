@@ -12,6 +12,7 @@ export enum ShortcutKey {
   RANGEOPEN = '07.rangeopen',
   TOGGLE_ANSWER = '11.toggle-answer',
   SKIP = '12.skip',
+  AUTOSTOP = '13.auto-stop',
   HELP = '91.help',
 }
 
@@ -82,6 +83,10 @@ export const DefaultShortcutConfig: ShortcutConfig = {
   [ShortcutKey.SKIP]: {
     shortcuts: [makeShortcutObject({ key: 's', ctrlKey: true })],
     info: 'Skip',
+  },
+  [ShortcutKey.AUTOSTOP]: {
+    shortcuts: [makeShortcutObject({ key: 'a', ctrlKey: true })],
+    info: 'Toggle Auto Stop',
   },
   [ShortcutKey.HELP]: {
     shortcuts: [makeShortcutObject({ key: '/', ctrlKey: true })],
