@@ -31,6 +31,7 @@ export type onInputType = {
   answer: string
   done: boolean
   correct: boolean
+  skip?: boolean
 }
 export interface TranscriptWriterProps {
   text?: SRTMeasure
@@ -45,6 +46,7 @@ export interface TranscriptWriterProps {
   onFocus?: (focus: boolean) => void
   onInput?: (value: onInputType) => void
   onSkip?: (skip: boolean) => void
+  onAutoStop?: () => void
   onHelp?: () => void
   onEscape?: () => void
 }
@@ -146,6 +148,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     [ShortcutKey.RANGEOPEN]: props.onRangeOpen,
     [ShortcutKey.TOGGLE_ANSWER]: toggleAnswer,
     [ShortcutKey.SKIP]: skipToggleHandler,
+    [ShortcutKey.AUTOSTOP]: props.onAutoStop,
     [ShortcutKey.HELP]: props.onHelp,
   }
 
@@ -157,8 +160,8 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     const correct = wordProcessors.every((wp) => wp.isCorrect)
     props.onInput?.call(null, {
       answer,
-      done: result.show || false,
       correct,
+      done: result.show || false,
     })
   }, [props.onInput?.call, result.show, wordProcessors])
   useEffect(() => {
@@ -191,7 +194,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
             correct: transcript.correct || false,
             skip,
           })
-          props.onSkip?.call(null, skip)
         } else {
           setWordProcessors(wordProcessors)
           setInputValue('')
@@ -319,6 +321,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
       answer,
       done: true,
       correct: true,
+      skip: false,
     })
   }
 
@@ -345,14 +348,14 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-            <Tooltip content={showDiff ? 'correct' : 'diff'}>
-              <Button
-                css={styles.diffButton}
-                icon={showDiff ? 'clean' : 'delta'}
-                onClick={toggleShowDiff}
-              />
-            </Tooltip>
-          ))}
+              <Tooltip content={showDiff ? 'correct' : 'diff'}>
+                <Button
+                  css={styles.diffButton}
+                  icon={showDiff ? 'clean' : 'delta'}
+                  onClick={toggleShowDiff}
+                />
+              </Tooltip>
+            ))}
       </div>
       <div css={styles.paragraphContainer}>
         <div
@@ -412,21 +415,21 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
                           onClick={props?.onNext}
                         />
                       ) : (
-                        <Button
-                          icon="endorsed"
-                          text="Make it correct"
-                          onClick={makeItCorrectHandler}
-                        />
-                      )}
+                          <Button
+                            icon="endorsed"
+                            text="Make it correct"
+                            onClick={makeItCorrectHandler}
+                          />
+                        )}
                     </div>
                   ) : (
-                    <Button
-                      icon={inputEnded ? 'tick-circle' : 'eye-open'}
-                      intent={inputEnded ? 'primary' : 'none'}
-                      text="Show Answer"
-                      onClick={showAnswerClickHandler}
-                    />
-                  )}
+                      <Button
+                        icon={inputEnded ? 'tick-circle' : 'eye-open'}
+                        intent={inputEnded ? 'primary' : 'none'}
+                        text="Show Answer"
+                        onClick={showAnswerClickHandler}
+                      />
+                    )}
                 </Tooltip>
               )}
             </div>

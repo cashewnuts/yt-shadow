@@ -101,10 +101,12 @@ const App = (props: PropsWithChildren<unknown>) => {
     pauseTimeoutId: number | null
     waitMillisec: number
     srtGrainSize: SRTPropName
+    autoStop: boolean
   }>({
     pauseTimeoutId: null,
     waitMillisec: 100,
     srtGrainSize: SRTPropName.texts,
+    autoStop: false,
   })
   const [transcript, setTranscript] = useState<SRTMeasure>()
   const [transcriptState, setTranscriptState] = useState<{
@@ -200,6 +202,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     if (!matchedScript || appState.pauseTimeoutId) return
     if (
       hasInputFocus &&
+      appState.autoStop &&
       matchedScript !== transcript &&
       !transcriptState.skip
     ) {
@@ -288,6 +291,12 @@ const App = (props: PropsWithChildren<unknown>) => {
       }
     }
   }
+  const handleAutoStopToggle = () => {
+    setAppState({
+      ...appState,
+      autoStop: !appState.autoStop,
+    })
+  }
   const handleTranscriptInput = async (value: onInputType) => {
     logger.debug('handleTranscriptInput', value)
     if (!transcript || !videoId) return
@@ -304,6 +313,7 @@ const App = (props: PropsWithChildren<unknown>) => {
         text: transcript,
         done: value.done,
         correct: value.correct,
+        skip: value.skip || false,
       })
       logger.info('dbMessageService.patch for input', {
         patchTranscript,
@@ -388,11 +398,13 @@ const App = (props: PropsWithChildren<unknown>) => {
               render={(video) => (
                 <VideoPlayer
                   video={video}
+                  autoStop={appState.autoStop}
                   onToggle={handleToggleOnVideoPlayer}
                   onRangeOpen={handleRangeOpen}
                   onRepeat={handleRepeatVideo}
                   onNext={handleNextPrevTranscript(1)}
                   onPrevious={handleNextPrevTranscript(-1)}
+                  onAutoStopToggle={handleAutoStopToggle}
                   onHelp={handleHelp}
                 />
               )}
@@ -437,6 +449,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               onPrevious={handleNextPrevTranscript(-1)}
               onInput={handleTranscriptInput}
               onSkip={handleSkip}
+              onAutoStop={handleAutoStopToggle}
               onHelp={handleHelp}
               onEscape={handleEscape}
             >
