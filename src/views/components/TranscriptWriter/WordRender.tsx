@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import React, { PropsWithChildren, useState } from 'react'
+import React, { PropsWithChildren, useState, useRef } from 'react'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jsx,
@@ -7,12 +7,15 @@ import {
   InterpolationWithTheme,
 } from '@emotion/core'
 import { WordProcessorResult } from './WordProcessor'
+import { Menu, MenuItem, ContextMenu } from '@blueprintjs/core'
+import { WHITE_SPACE } from '@/helpers/text-helper'
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   word: css({
+    display: 'inline-block',
+    cursor: 'pointer',
     fontSize: '16px',
     fontFamily: '"Roboto Mono", monospace',
-    wordSpacing: '3px',
     letterSpacing: '3px',
     '& i': {
       display: 'inline-block',
@@ -37,13 +40,24 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
 }
 
 export interface WordRenderProps {
+  index?: number
   type: 'mask' | 'diff' | 'answer'
   chars: WordProcessorResult[]
 }
 
+const WordContextMenu = (): JSX.Element => {
+  return (
+    <Menu>
+      <MenuItem text="Save" />
+      <MenuItem text="Delete" />
+    </Menu>
+  )
+}
+
 export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
-  const { type, chars } = props
+  const { index, type, chars } = props
   const [showIndexes, setShowIndexes] = useState<number[]>([])
+  const wordEl = useRef<HTMLPreElement>(null)
   const handleMouseEnter = (index: number) => () => {
     setShowIndexes([index])
   }
@@ -56,8 +70,22 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     }
     return result.s ? styles.wrong : styles.notInput
   }
+  const handleContextMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log(e, wordEl, window.getSelection())
+
+    ContextMenu.show(
+      <WordContextMenu />,
+      { left: e.clientX, top: e.clientY },
+      () => {
+        // menu was closed; callback optional
+      }
+    )
+  }
   return (
-    <pre css={styles.word}>
+    <span ref={wordEl} css={styles.word} onContextMenu={handleContextMenu}>
+      {index !== 0 ? WHITE_SPACE : undefined}
       {type === 'mask' &&
         chars.map((rslt, index) => (
           <i
@@ -86,6 +114,6 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
             {rslt.w}
           </i>
         ))}
-    </pre>
+    </span>
   )
 }
