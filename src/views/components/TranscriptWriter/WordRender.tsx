@@ -10,8 +10,8 @@ import { WordProcessorResult } from './WordProcessor'
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   word: css({
-    fontSize: '18px',
-    fontFamily: 'Roboto, monospace',
+    fontSize: '16px',
+    fontFamily: '"Roboto Mono", monospace',
     wordSpacing: '3px',
     letterSpacing: '3px',
     '& i': {
