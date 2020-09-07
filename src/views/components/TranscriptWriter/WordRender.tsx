@@ -9,32 +9,30 @@ import {
 import { WordProcessorResult } from './WordProcessor'
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
+  word: css({
+    fontSize: '18px',
+    fontFamily: 'Roboto, monospace',
+    wordSpacing: '3px',
+    letterSpacing: '3px',
+    '& i': {
+      display: 'inline-block',
+      marginLeft: '1px',
+    },
+  }),
   masked: css({
     borderBottom: '1px solid black',
-    display: 'inline-block',
-    width: '.75em',
     fontStyle: 'normal',
-    marginLeft: '1px',
   }),
   correct: css({
-    display: 'inline-block',
-    width: '.75em',
     fontStyle: 'normal',
-    marginLeft: '1px',
   }),
   wrong: css({
     background: 'yellow',
-    display: 'inline-block',
-    width: '.75em',
     fontStyle: 'italic',
-    marginLeft: '1px',
   }),
   notInput: css({
     background: 'yellow',
-    display: 'inline-block',
-    width: '.75em',
     fontStyle: 'normal',
-    marginLeft: '1px',
   }),
 }
 
@@ -59,7 +57,7 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     return result.s ? styles.wrong : styles.notInput
   }
   return (
-    <pre>
+    <pre css={styles.word}>
       {type === 'mask' &&
         chars.map((rslt, index) => (
           <i
