@@ -9,6 +9,8 @@ import {
 import { WordProcessorResult } from './WordProcessor'
 import { Menu, MenuItem, ContextMenu } from '@blueprintjs/core'
 import { WHITE_SPACE } from '@/helpers/text-helper'
+import { createLogger } from '@/helpers/logger'
+const logger = createLogger('WordRender.tsx')
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   word: css({
@@ -47,9 +49,8 @@ export interface WordRenderProps {
 
 const WordContextMenu = (): JSX.Element => {
   return (
-    <Menu>
-      <MenuItem text="Save" />
-      <MenuItem text="Delete" />
+    <Menu onClick={(e: any) => e.stopPropagation()}>
+      <MenuItem text="Dictionary" />
     </Menu>
   )
 }
@@ -57,7 +58,6 @@ const WordContextMenu = (): JSX.Element => {
 export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
   const { index, type, chars } = props
   const [showIndexes, setShowIndexes] = useState<number[]>([])
-  const wordEl = useRef<HTMLPreElement>(null)
   const handleMouseEnter = (index: number) => () => {
     setShowIndexes([index])
   }
@@ -73,18 +73,43 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
   const handleContextMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log(e, wordEl, window.getSelection())
+    if (type !== 'answer') {
+      return
+    }
+    const span = e.currentTarget as Node
+    const nodes = Array.from(span.childNodes)
+    const firstIndex = nodes.findIndex(({ tagName }: any) => tagName === 'I')
+    const fromLastIndex = nodes
+      .slice()
+      .reverse()
+      .findIndex(({ tagName }: any) => tagName === 'I')
+    const lastIndex = nodes.length - fromLastIndex
 
+    const selection = document.getSelection()
+    const range = new Range()
+    range.setStart(span, firstIndex)
+    range.setEnd(span, lastIndex)
+
+    const selectionChangeHandler = () => {
+      logger.debug('selectionChangeHandler', document.getSelection())
+    }
+    document.addEventListener('selectionchange', selectionChangeHandler)
+
+    const { clientX, clientY } = e
     ContextMenu.show(
       <WordContextMenu />,
-      { left: e.clientX, top: e.clientY },
+      { left: clientX + 20, top: clientY },
       () => {
-        // menu was closed; callback optional
+        document.removeEventListener('selectionchange', selectionChangeHandler)
+        selection?.removeAllRanges()
       }
     )
+    setTimeout(() => {
+      selection?.addRange(range)
+    }, 20)
   }
   return (
-    <span ref={wordEl} css={styles.word} onContextMenu={handleContextMenu}>
+    <span css={styles.word} onContextMenu={handleContextMenu}>
       {index !== 0 ? WHITE_SPACE : undefined}
       {type === 'mask' &&
         chars.map((rslt, index) => (
