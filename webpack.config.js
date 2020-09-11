@@ -3,6 +3,7 @@ const path = require('path')
 const WebpackWebExt = require('webpack-webext-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
 
 const { NODE_ENV = 'development', ENABLE_WEBEXT } = process.env
 
@@ -60,6 +61,10 @@ const webpackConfig = {
             'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
         },
       ],
+    }),
+    new Dotenv({
+      safe: false,
+      systemvars: true,
     }),
   ],
 }

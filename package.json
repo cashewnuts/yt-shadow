@@ -42,6 +42,7 @@
     "babel-preset-minify": "^0.5.1",
     "copy-webpack-plugin": "^6.0.1",
     "css-loader": "^3.5.3",
+    "dotenv-webpack": "^2.0.0",
     "eslint": "^7.0.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-jest": "^23.13.1",

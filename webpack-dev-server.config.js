@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
 
 const { NODE_ENV = 'development' } = process.env
 
@@ -42,7 +43,12 @@ const webpackConfig = {
       },
     ],
   },
-  plugins: [],
+  plugins: [
+    new Dotenv({
+      safe: false,
+      systemvars: true,
+    }),
+  ],
   devServer: {
     contentBase: path.join(__dirname, 'devServer', 'public'),
     publicPath: '/',

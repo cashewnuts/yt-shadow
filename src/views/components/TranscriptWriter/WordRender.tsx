@@ -1,5 +1,10 @@
 /** @jsx jsx */
-import React, { PropsWithChildren, useState, useRef } from 'react'
+import React, {
+  PropsWithChildren,
+  useState,
+  useContext,
+  SyntheticEvent,
+} from 'react'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jsx,
@@ -7,9 +12,18 @@ import {
   InterpolationWithTheme,
 } from '@emotion/core'
 import { WordProcessorResult } from './WordProcessor'
-import { Menu, MenuItem, ContextMenu } from '@blueprintjs/core'
+import {
+  Menu,
+  MenuItem,
+  ContextMenu,
+  Popover,
+  Position,
+  Spinner,
+} from '@blueprintjs/core'
 import { WHITE_SPACE } from '@/helpers/text-helper'
 import { createLogger } from '@/helpers/logger'
+import { MessageContext } from '@/contexts/MessageContext'
+import { OwlbotResponse } from '@/services/request-message-service'
 const logger = createLogger('WordRender.tsx')
 
 const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
@@ -41,23 +55,89 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
 }
 
+const dictStyle: { [key: string]: InterpolationWithTheme<unknown> } = {
+  loadingWrapper: css({
+    width: '20em',
+    height: '10em',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+  dictWrapper: css({
+    width: '20em',
+    maxHeight: '20em',
+    overflow: 'auto',
+    padding: '0.5em 1em',
+  }),
+  word: css({
+    marginBottom: '0.3em',
+  }),
+  pronounce: css({
+    marginLeft: '0.75em',
+  }),
+  hr: css({
+    margin: '0.25em 0',
+    borderBottom: 'none',
+    borderTop: '0.5px solid rgb(128, 128, 128)',
+  }),
+}
+const DictionaryRender = (
+  props: PropsWithChildren<{ info: boolean | OwlbotResponse }>
+) => {
+  const { info } = props
+  if (typeof info === 'boolean') {
+    return (
+      <div css={dictStyle.loadingWrapper}>
+        <Spinner intent="none" size={Spinner.SIZE_SMALL} />
+      </div>
+    )
+  }
+
+  return (
+    <div css={dictStyle.dictWrapper}>
+      <div className="bp3-running-text bp3-text-large">
+        <p css={dictStyle.word}>
+          {info.word}
+          {info.pronunciation && (
+            <small css={dictStyle.pronounce}>/{info.pronunciation}/</small>
+          )}
+        </p>
+      </div>
+      <div>
+        {info.definitions.map((def, index) => (
+          <div key={index}>
+            <hr css={dictStyle.hr} />
+            <div>{def.type}</div>
+            <p>{def.definition}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export interface WordRenderProps {
   index?: number
   type: 'mask' | 'diff' | 'answer'
   chars: WordProcessorResult[]
 }
 
-const WordContextMenu = (): JSX.Element => {
+const WordContextMenu = (props: { onDict?: () => void }): JSX.Element => {
   return (
     <Menu onClick={(e: any) => e.stopPropagation()}>
-      <MenuItem text="Dictionary" />
+      <MenuItem text="Dictionary" onClick={props.onDict} />
     </Menu>
   )
 }
 
 export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
+  const { requestMessage } = useContext(MessageContext)
   const { index, type, chars } = props
   const [showIndexes, setShowIndexes] = useState<number[]>([])
+  const [dictionaryInfo, setDictionaryInfo] = useState<
+    boolean | OwlbotResponse
+  >(false)
+  const popoverOpen = Boolean(dictionaryInfo)
   const handleMouseEnter = (index: number) => () => {
     setShowIndexes([index])
   }
@@ -69,6 +149,26 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
       return styles.correct
     }
     return result.s ? styles.wrong : styles.notInput
+  }
+  const handleDictionary = async () => {
+    logger.debug('handleDictionary', popoverOpen)
+    const selection = document.getSelection()
+    const word = selection?.toString()
+    if (!word) {
+      return
+    }
+    try {
+      setDictionaryInfo(true)
+      const dict = await requestMessage?.getDict(word)
+      if (!dict) return
+      setDictionaryInfo(dict)
+      logger.debug('handleDictionary', dict)
+      ContextMenu.hide()
+    } catch (err) {
+      logger.error('handleDictionary', err)
+      setDictionaryInfo(false)
+      ContextMenu.hide()
+    }
   }
   const handleContextMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault()
@@ -97,8 +197,8 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
 
     const { clientX, clientY } = e
     ContextMenu.show(
-      <WordContextMenu />,
-      { left: clientX + 20, top: clientY },
+      <WordContextMenu onDict={handleDictionary} />,
+      { left: clientX, top: clientY },
       () => {
         document.removeEventListener('selectionchange', selectionChangeHandler)
         selection?.removeAllRanges()
@@ -108,37 +208,48 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
       selection?.addRange(range)
     }, 20)
   }
+  const handlePopoverClose = (event?: SyntheticEvent<HTMLElement>) => {
+    logger.debug('handlePopoverClose', event)
+    setDictionaryInfo(false)
+  }
   return (
-    <span css={styles.word} onContextMenu={handleContextMenu}>
-      {index !== 0 ? WHITE_SPACE : undefined}
-      {type === 'mask' &&
-        chars.map((rslt, index) => (
-          <i
-            css={styles.masked}
-            style={!rslt.spoken ? { borderBottom: 'unset' } : {}}
-            key={index}
-            onMouseEnter={handleMouseEnter(index)}
-            onMouseLeave={handleMouseLeave(index)}
-          >
-            {!rslt.spoken || showIndexes.indexOf(index) >= 0
-              ? rslt.w
-              : rslt.s
-              ? rslt.s
-              : rslt.mask}
-          </i>
-        ))}
-      {type === 'diff' &&
-        chars.map((rslt, index) => (
-          <i key={index} css={getAnswerCss(rslt)}>
-            {rslt.s && !rslt.correct ? rslt.s : rslt.w}
-          </i>
-        ))}
-      {type === 'answer' &&
-        chars.map((rslt, index) => (
-          <i key={index} css={getAnswerCss(rslt)}>
-            {rslt.w}
-          </i>
-        ))}
-    </span>
+    <Popover
+      content={<DictionaryRender info={dictionaryInfo} />}
+      isOpen={popoverOpen}
+      onClose={handlePopoverClose}
+      position={Position.TOP}
+    >
+      <span css={styles.word} onContextMenu={handleContextMenu}>
+        {index !== 0 ? WHITE_SPACE : undefined}
+        {type === 'mask' &&
+          chars.map((rslt, index) => (
+            <i
+              css={styles.masked}
+              style={!rslt.spoken ? { borderBottom: 'unset' } : {}}
+              key={index}
+              onMouseEnter={handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave(index)}
+            >
+              {!rslt.spoken || showIndexes.indexOf(index) >= 0
+                ? rslt.w
+                : rslt.s
+                ? rslt.s
+                : rslt.mask}
+            </i>
+          ))}
+        {type === 'diff' &&
+          chars.map((rslt, index) => (
+            <i key={index} css={getAnswerCss(rslt)}>
+              {rslt.s && !rslt.correct ? rslt.s : rslt.w}
+            </i>
+          ))}
+        {type === 'answer' &&
+          chars.map((rslt, index) => (
+            <i key={index} css={getAnswerCss(rslt)}>
+              {rslt.w}
+            </i>
+          ))}
+      </span>
+    </Popover>
   )
 }

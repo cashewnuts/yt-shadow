@@ -12,6 +12,8 @@ import {
   VideoAction,
   VideoUpsertAction,
   RequestAction,
+  RequestDictionaryAction,
+  RequestContentAction,
 } from '@/messages'
 
 export function instanceOfDatabaseAction(
@@ -84,5 +86,24 @@ export function instanceOfVideoBulkUpsertAction(
  * Request Action
  */
 export function instanceOfRequestAction(object: any): object is RequestAction {
-  return 'action' in object && 'contentType' in object && 'url' in object
+  return 'action' in object && object.action === 'request'
+}
+export function instanceOfRequestContentAction(
+  object: any
+): object is RequestContentAction {
+  return (
+    instanceOfRequestAction(object) &&
+    'contentType' in object &&
+    'url' in object
+  )
+}
+
+export function instanceOfRequestDictionaryAction(
+  object: any
+): object is RequestDictionaryAction {
+  return (
+    instanceOfRequestAction(object) &&
+    'contentType' in object &&
+    object.contentType === 'dictionary'
+  )
 }
