@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, {
   PropsWithChildren,
   ChangeEvent,

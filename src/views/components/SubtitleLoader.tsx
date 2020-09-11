@@ -14,9 +14,12 @@ const logger = createLogger('SubtitleLoader.tsx')
 
 export interface SubtitleLoaderProps {
   videoId?: string
-  onSRTLoaded: (response: SRT) => any
-  onError?: (err: Error) => any
-  render: (renderArg: { loading: boolean; subtitleNotExists: boolean }) => any
+  onSRTLoaded: (response: SRT) => void
+  onError?: (err: Error) => void
+  render: (renderArg: {
+    loading: boolean
+    subtitleNotExists: boolean
+  }) => JSX.Element
 }
 
 const getTimedTextUrl = (lang = 'en', v: string) => {

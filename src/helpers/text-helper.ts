@@ -12,8 +12,8 @@ export const escapeRegExp = (str: string) => {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
 }
 
-export const checkSpokenChar = (str: string) => {
-  return SYMBOLS.indexOf(str) === -1 && !/\s/.test(str)
+export const checkSpokenChar = (str?: string | null) => {
+  return !!str && SYMBOLS.indexOf(str) === -1 && !/\s/.test(str)
 }
 export const checkSymbol = (str: string) => {
   return !checkSpokenChar(str)

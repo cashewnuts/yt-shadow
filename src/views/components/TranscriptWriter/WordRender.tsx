@@ -124,7 +124,7 @@ export interface WordRenderProps {
 
 const WordContextMenu = (props: { onDict?: () => void }): JSX.Element => {
   return (
-    <Menu onClick={(e: any) => e.stopPropagation()}>
+    <Menu onClick={(e: SyntheticEvent<HTMLElement>) => e.stopPropagation()}>
       <MenuItem text="Dictionary" onClick={props.onDict} />
     </Menu>
   )
@@ -178,13 +178,13 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     }
     const span = e.currentTarget as Node
     const nodes = Array.from(span.childNodes)
-    const firstIndex = nodes.findIndex(({ textContent }: any) =>
+    const firstIndex = nodes.findIndex(({ textContent }: ChildNode) =>
       checkSpokenChar(textContent)
     )
     const fromLastIndex = nodes
       .slice()
       .reverse()
-      .findIndex(({ textContent }: any) => checkSpokenChar(textContent))
+      .findIndex(({ textContent }: ChildNode) => checkSpokenChar(textContent))
     const lastIndex = nodes.length - fromLastIndex
 
     const selection = document.getSelection()
