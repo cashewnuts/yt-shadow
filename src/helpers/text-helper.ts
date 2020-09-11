@@ -13,7 +13,7 @@ export const escapeRegExp = (str: string) => {
 }
 
 export const checkSpokenChar = (str: string) => {
-  return SYMBOLS.indexOf(str) === -1
+  return SYMBOLS.indexOf(str) === -1 && !/\s/.test(str)
 }
 export const checkSymbol = (str: string) => {
   return !checkSpokenChar(str)

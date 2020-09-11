@@ -20,7 +20,7 @@ import {
   Position,
   Spinner,
 } from '@blueprintjs/core'
-import { WHITE_SPACE } from '@/helpers/text-helper'
+import { WHITE_SPACE, checkSpokenChar } from '@/helpers/text-helper'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
 import { OwlbotResponse } from '@/services/request-message-service'
@@ -178,11 +178,13 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     }
     const span = e.currentTarget as Node
     const nodes = Array.from(span.childNodes)
-    const firstIndex = nodes.findIndex(({ tagName }: any) => tagName === 'I')
+    const firstIndex = nodes.findIndex(({ textContent }: any) =>
+      checkSpokenChar(textContent)
+    )
     const fromLastIndex = nodes
       .slice()
       .reverse()
-      .findIndex(({ tagName }: any) => tagName === 'I')
+      .findIndex(({ textContent }: any) => checkSpokenChar(textContent))
     const lastIndex = nodes.length - fromLastIndex
 
     const selection = document.getSelection()
