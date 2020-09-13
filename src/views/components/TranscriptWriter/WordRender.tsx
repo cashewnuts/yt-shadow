@@ -4,6 +4,7 @@ import React, {
   useState,
   useContext,
   SyntheticEvent,
+  useEffect,
 } from 'react'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,11 +82,33 @@ const dictStyle: { [key: string]: InterpolationWithTheme<unknown> } = {
     borderTop: '0.5px solid rgb(128, 128, 128)',
   }),
 }
-const DictionaryRender = (
-  props: PropsWithChildren<{ info: boolean | OwlbotResponse }>
-) => {
-  const { info } = props
-  if (typeof info === 'boolean') {
+const DictionaryRender = (props: PropsWithChildren<{ word?: string }>) => {
+  const { word } = props
+  const { requestMessage } = useContext(MessageContext)
+  const [info, setInfo] = useState<OwlbotResponse>()
+  const [loading, setLoading] = useState<boolean>(false)
+
+  useEffect(() => {
+    const asyncFn = async () => {
+      logger.debug('DictionaryRender', word)
+      if (!word) return
+      setLoading(true)
+      try {
+        const dict = await requestMessage?.getDict(word)
+        if (!dict) return
+        logger.debug('handleDictionary', dict)
+        setInfo(dict)
+      } catch (err) {
+        logger.error('handleDictionary', err)
+        setInfo(undefined)
+      } finally {
+        setLoading(false)
+      }
+    }
+    asyncFn()
+  }, [word, requestMessage])
+
+  if (loading) {
     return (
       <div css={dictStyle.loadingWrapper}>
         <Spinner intent="none" size={Spinner.SIZE_SMALL} />
@@ -95,23 +118,31 @@ const DictionaryRender = (
 
   return (
     <div css={dictStyle.dictWrapper}>
-      <div className="bp3-running-text bp3-text-large">
-        <p css={dictStyle.word}>
-          {info.word}
-          {info.pronunciation && (
-            <small css={dictStyle.pronounce}>/{info.pronunciation}/</small>
-          )}
-        </p>
-      </div>
-      <div>
-        {info.definitions.map((def, index) => (
-          <div key={index}>
-            <hr css={dictStyle.hr} />
-            <div>{def.type}</div>
-            <p>{def.definition}</p>
+      {info ? (
+        <div>
+          <div className="bp3-running-text bp3-text-large">
+            <p css={dictStyle.word}>
+              {info.word}
+              {info.pronunciation && (
+                <small css={dictStyle.pronounce}>/{info.pronunciation}/</small>
+              )}
+            </p>
           </div>
-        ))}
-      </div>
+          <div>
+            {info.definitions.map((def, index) => (
+              <div key={index}>
+                <hr css={dictStyle.hr} />
+                <div>{def.type}</div>
+                <p>{def.definition}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bp3-text-large bp3-text-muted">
+          <p>`{word || ''}` is not found.</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -131,13 +162,10 @@ const WordContextMenu = (props: { onDict?: () => void }): JSX.Element => {
 }
 
 export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
-  const { requestMessage } = useContext(MessageContext)
   const { index, type, chars } = props
   const [showIndexes, setShowIndexes] = useState<number[]>([])
-  const [dictionaryInfo, setDictionaryInfo] = useState<
-    boolean | OwlbotResponse
-  >(false)
-  const popoverOpen = Boolean(dictionaryInfo)
+  const [dictWord, setDictionaryWord] = useState<string>()
+  const popoverOpen = Boolean(dictWord)
   const handleMouseEnter = (index: number) => () => {
     setShowIndexes([index])
   }
@@ -154,21 +182,8 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
     logger.debug('handleDictionary', popoverOpen)
     const selection = document.getSelection()
     const word = selection?.toString()
-    if (!word) {
-      return
-    }
-    try {
-      setDictionaryInfo(true)
-      const dict = await requestMessage?.getDict(word)
-      if (!dict) return
-      setDictionaryInfo(dict)
-      logger.debug('handleDictionary', dict)
-      ContextMenu.hide()
-    } catch (err) {
-      logger.error('handleDictionary', err)
-      setDictionaryInfo(false)
-      ContextMenu.hide()
-    }
+    setDictionaryWord(word || undefined)
+    ContextMenu.hide()
   }
   const handleContextMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault()
@@ -212,11 +227,11 @@ export const WordRender = (props: PropsWithChildren<WordRenderProps>) => {
   }
   const handlePopoverClose = (event?: SyntheticEvent<HTMLElement>) => {
     logger.debug('handlePopoverClose', event)
-    setDictionaryInfo(false)
+    setDictionaryWord(undefined)
   }
   return (
     <Popover
-      content={<DictionaryRender info={dictionaryInfo} />}
+      content={<DictionaryRender word={dictWord} />}
       isOpen={popoverOpen}
       onClose={handlePopoverClose}
       position={Position.TOP}
