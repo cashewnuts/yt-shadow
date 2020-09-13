@@ -1,6 +1,6 @@
 export const getElementAsync = async <T extends HTMLElement>(
   selectArgs: { id?: string; query?: string },
-  waitUntil: number = 3000
+  waitUntil = 3000
 ) => {
   const { id, query } = selectArgs
   if (!id && !query) {
@@ -25,4 +25,20 @@ export const getElementAsync = async <T extends HTMLElement>(
     }
     check()
   })
+}
+
+export const prepareFonts = () => {
+  const linkDoms = Array.from(document.querySelectorAll('link'))
+  const robotoMonoFontHref =
+    'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400&display=swap'
+  const matchedLink = linkDoms.find(
+    (l: HTMLLinkElement) => l.href === robotoMonoFontHref
+  )
+  if (!matchedLink) {
+    const linkDom = document.createElement('link')
+    linkDom.href = robotoMonoFontHref
+    linkDom.rel = 'stylesheet'
+    const head = document.querySelector('head')
+    head?.appendChild(linkDom)
+  }
 }

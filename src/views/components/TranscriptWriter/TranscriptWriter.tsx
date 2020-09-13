@@ -1,4 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /** @jsx jsx */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, {
   PropsWithChildren,
   ChangeEvent,
@@ -78,11 +80,6 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
     width: '60%',
     opacity: 0,
   }),
-  word: css({
-    display: 'inline-block',
-    paddingLeft: '0.5em',
-    cursor: 'pointer',
-  }),
   paragraphContainer: css({
     flexGrow: 1,
     fontSize: '16px',
@@ -123,7 +120,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   const { config: shortcutConfig } = useContext(ShortcutContext)
 
   const toggleAnswer = () => {
-    if (!text) return;
+    if (!text) return
     const answer = wordProcessors
       .map((wp) => wp.answerText)
       .join(' ')
@@ -165,7 +162,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   }
 
   const emitOnLoad = useCallback(() => {
-    if (!text) return;
+    if (!text) return
     const answer = wordProcessors
       .map((wp) => wp.answerText)
       .join(' ')
@@ -178,7 +175,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     })
   }, [props.onLoad])
   const emitOnInput = useCallback(() => {
-    if (!text) return;
+    if (!text) return
     const answer = wordProcessors
       .map((wp) => wp.answerText)
       .join(' ')
@@ -331,7 +328,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
     })
   }
   const makeItCorrectHandler = () => {
-    if (!text) return;
+    if (!text) return
     const answer = wordProcessors
       .map((wp) => wp.wordText)
       .join(' ')
@@ -375,31 +372,31 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-              <Tooltip content={showDiff ? 'correct' : 'diff'}>
-                <Button
-                  css={styles.diffButton}
-                  icon={showDiff ? 'clean' : 'delta'}
-                  onClick={toggleShowDiff}
-                />
-              </Tooltip>
-            ))}
+            <Tooltip content={showDiff ? 'correct' : 'diff'}>
+              <Button
+                css={styles.diffButton}
+                icon={showDiff ? 'clean' : 'delta'}
+                onClick={toggleShowDiff}
+              />
+            </Tooltip>
+          ))}
       </div>
       <div css={styles.paragraphContainer}>
-        <div
+        <p
           css={styles.paragraph}
           style={{ opacity: result.skip ? 0.2 : 1 }}
           onClick={handleParagraphClick}
         >
           {(inputValue || result.show || true) &&
-            wordProcessors.map((wp) => (
-              <div css={styles.word} key={wp.key}>
-                <WordRender
-                  chars={wp.results}
-                  type={result.show ? (showDiff ? 'diff' : 'answer') : 'mask'}
-                />
-              </div>
+            wordProcessors.map((wp, index) => (
+              <WordRender
+                index={index}
+                key={wp.key}
+                chars={wp.results}
+                type={result.show ? (showDiff ? 'diff' : 'answer') : 'mask'}
+              />
             ))}
-        </div>
+        </p>
       </div>
       <div css={styles.bottomContainer}>
         <div css={styles.inputContainer}>
@@ -442,21 +439,21 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
                           onClick={props?.onNext}
                         />
                       ) : (
-                          <Button
-                            icon="endorsed"
-                            text="Make it correct"
-                            onClick={makeItCorrectHandler}
-                          />
-                        )}
+                        <Button
+                          icon="endorsed"
+                          text="Make it correct"
+                          onClick={makeItCorrectHandler}
+                        />
+                      )}
                     </div>
                   ) : (
-                      <Button
-                        icon={inputEnded ? 'tick-circle' : 'eye-open'}
-                        intent={inputEnded ? 'primary' : 'none'}
-                        text="Show Answer"
-                        onClick={showAnswerClickHandler}
-                      />
-                    )}
+                    <Button
+                      icon={inputEnded ? 'tick-circle' : 'eye-open'}
+                      intent={inputEnded ? 'primary' : 'none'}
+                      text="Show Answer"
+                      onClick={showAnswerClickHandler}
+                    />
+                  )}
                 </Tooltip>
               )}
             </div>

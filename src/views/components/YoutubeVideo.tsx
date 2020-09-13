@@ -12,7 +12,7 @@ const logger = createLogger('YoutubeVideo.tsx')
 
 export interface YoutubeVideoProps {
   onLoaded?: (args: { video: HTMLVideoElement }) => void
-  render: (video: HTMLVideoElement) => any
+  render: (video: HTMLVideoElement) => JSX.Element
 }
 
 const YoutubeEventHandler = (
@@ -22,13 +22,15 @@ const YoutubeEventHandler = (
   } & DOMAttributes<HTMLVideoElement>
 ) => {
   const { eventKeys, video } = props
-  eventKeys.forEach((eventProp: string) => {
+  for (const eventProp of eventKeys) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEventListener(
       eventProp.substr(2).toLowerCase(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (props as any)[eventProp],
       video
     )
-  })
+  }
   return <></>
 }
 
@@ -55,7 +57,7 @@ const YoutubeVideo = (
     return () => {
       setVideo(undefined)
     }
-  }, [])
+  }, [props])
 
   return (
     <>
