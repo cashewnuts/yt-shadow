@@ -3,7 +3,8 @@ import {
   TranscriptAction,
   ConnectionMessage,
   VideoAction,
-  RequestAction,
+  RequestContentAction,
+  RequestDictionaryAction,
 } from '../messages'
 import {
   instanceOfDatabaseAction,
@@ -17,7 +18,9 @@ import {
   instanceOfVideoBulkUpsertAction,
   instanceOfVideoAction,
   instanceOfVideoUpsertAction,
+  instanceOfRequestContentAction,
   instanceOfRequestAction,
+  instanceOfRequestDictionaryAction,
 } from '../helpers/message-helper'
 import { db } from '../storages/shadowing-db'
 import { createLogger } from '../helpers/logger'
@@ -27,12 +30,42 @@ const logger = createLogger('background.ts')
 
 let portFromCS: browser.runtime.Port[] = []
 
+const expandError = (err: Error) => ({
+  name: err.name,
+  message: err.message,
+  stack: err.stack,
+})
+const postDatabaseAction = (
+  port: browser.runtime.Port,
+  action: DatabaseAction,
+  value: unknown
+) => {
+  port.postMessage({
+    action: action.action,
+    table: action.table,
+    method: action.method,
+    value,
+  })
+}
+const throwDatabaseAction = (
+  port: browser.runtime.Port,
+  action: DatabaseAction,
+  error: Error
+) => {
+  port.postMessage({
+    action: action.action,
+    table: action.table,
+    method: action.method,
+    error: expandError(error),
+  })
+}
+
 async function handleTranscriptAction(
   port: browser.runtime.Port,
   action: TranscriptAction
 ) {
   if (instanceOfTranscriptBulkUpsertAction(action)) {
-    let result = true
+    const result = true
     try {
       const keys = action.value.map(({ host, videoId, start }) => [
         host,
@@ -65,33 +98,23 @@ async function handleTranscriptAction(
       logger.debug('bulkPut', putItems)
       const bulkPutResult = await db.transcripts.bulkPut(putItems)
       logger.debug('result bulkPut', bulkPutResult)
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   } else if (instanceOfTranscriptGetAction(action)) {
     let result = null
     try {
       const { host, videoId, start } = action.value
       logger.debug('get', host, videoId, start)
       result = await db.transcripts.get({ host, videoId, start })
+      logger.info('result get', result)
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    logger.info('result get', result)
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   } else if (instanceOfTranscriptGetAllAction(action)) {
     let result = null
     try {
@@ -99,16 +122,11 @@ async function handleTranscriptAction(
       logger.debug('getAll', host, videoId)
       result = await db.transcripts.where({ host, videoId }).sortBy('start')
       logger.info('result getAll', result)
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   } else if (instanceOfTranscriptFindAction(action)) {
     let result = null
     try {
@@ -145,16 +163,11 @@ async function handleTranscriptAction(
         })
         .sortBy('start')
       logger.info('result find', result)
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   } else if (instanceOfTranscriptPatchAction(action)) {
     let result = null
     try {
@@ -175,16 +188,11 @@ async function handleTranscriptAction(
       } else {
         result = await db.transcripts.put({ ...value, updatedAt: Date.now() })
       }
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   }
 }
 
@@ -206,16 +214,11 @@ async function handleVideoAction(
       logger.debug('upsert', value)
       result = await db.videos.put(putValue)
       logger.debug('result upsert', result)
+      postDatabaseAction(port, action, result)
     } catch (err) {
-      result = err
       logger.error(err)
+      throwDatabaseAction(port, action, err)
     }
-    port.postMessage({
-      action: action.action,
-      table: action.table,
-      method: action.method,
-      value: result,
-    })
   } else if (instanceOfVideoBulkUpsertAction(action)) {
     logger.error('This method of action is not implemented', action)
   } else {
@@ -236,24 +239,72 @@ async function databaseActionHandler(
   }
 }
 
-async function requestActionHandler(
+async function requestContentActionHandler(
   port: browser.runtime.Port,
-  action: RequestAction
+  action: RequestContentAction
 ) {
   let result = null
-  const { url } = action
+  const { url, options } = action
   try {
-    const response = await fetch(url)
+    const response = await fetch(url, options)
     result = await response[action.contentType]()
+    logger.debug('requestContentActionHandler', { result })
+    port.postMessage({
+      action: action.action,
+      contentType: action.contentType,
+      url: action.url,
+      value: result,
+    })
   } catch (err) {
-    result = err
+    logger.error(err)
+    port.postMessage({
+      action: action.action,
+      contentType: action.contentType,
+      url: action.url,
+      error: expandError(err),
+    })
   }
-  port.postMessage({
-    action: action.action,
-    contentType: action.contentType,
-    url: action.url,
-    value: result,
-  })
+}
+async function requestDictionaryActionHandler(
+  port: browser.runtime.Port,
+  action: RequestDictionaryAction
+) {
+  let result = null
+  const { word, options } = action
+  try {
+    const url = `https://owlbot.info/api/v4/dictionary/${encodeURIComponent(
+      word
+    )}`
+    const apiToken = process.env.OWLBOT_API_TOKEN
+    const _options = {
+      ...options,
+      headers: {
+        ...options?.headers,
+        Authorization: `Token ${apiToken}`,
+      },
+    }
+    const response = await fetch(url, _options)
+    if (200 <= response.status && response.status < 300) {
+      result = await response.json()
+      logger.debug('requestDictionaryActionHandler', { result })
+      port.postMessage({
+        action: action.action,
+        contentType: action.contentType,
+        word: action.word,
+        value: result,
+      })
+    } else {
+      throw new Error(JSON.stringify(await response.json()))
+    }
+  } catch (err) {
+    logger.error(err)
+    port.postMessage({
+      action: action.action,
+      contentType: action.contentType,
+      word: action.word,
+      error: expandError(err),
+    })
+  }
 }
 
 export function connected(p: browser.runtime.Port) {
@@ -264,7 +315,11 @@ export function connected(p: browser.runtime.Port) {
     if (instanceOfDatabaseAction(obj)) {
       await databaseActionHandler(p, obj)
     } else if (instanceOfRequestAction(obj)) {
-      await requestActionHandler(p, obj)
+      if (instanceOfRequestContentAction(obj)) {
+        await requestContentActionHandler(p, obj)
+      } else if (instanceOfRequestDictionaryAction(obj)) {
+        await requestDictionaryActionHandler(p, obj)
+      }
     } else if (instanceOfMessage(obj)) {
       logger.info(obj.message)
     }

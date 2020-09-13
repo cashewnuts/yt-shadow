@@ -3,6 +3,7 @@ export interface DatabaseAction {
   table: string
   method: string
   value?: unknown
+  error?: Error
 }
 
 export * from './transcript-action'

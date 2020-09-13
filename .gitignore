@@ -1,11 +1,14 @@
 .DS_Store
 
-// npm
+# npm
 node_modules
 
-// building files
+# building files
 addon/yt-shadow.js
 addon/background.js
 addon/popup/popup.js
 addon/dashboard/dashboard.js
 web-ext-artifacts/
+
+# env file
+.env

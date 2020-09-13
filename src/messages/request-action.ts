@@ -2,15 +2,26 @@ export type ContentType = 'text' | 'json'
 
 export interface RequestAction {
   action: 'request'
-  contentType: ContentType
-  url: string
+  contentType: string
+  options?: RequestInit
   value?: unknown
+  error?: unknown
 }
 
-export interface TextRequestAction extends RequestAction {
+export interface RequestContentAction extends RequestAction {
+  url: string
+  contentType: ContentType
+}
+
+export interface TextRequestAction extends RequestContentAction {
   contentType: 'text'
 }
 
-export interface JsonRequestAction extends RequestAction {
+export interface JsonRequestAction extends RequestContentAction {
   contentType: 'json'
+}
+
+export interface RequestDictionaryAction extends RequestAction {
+  contentType: 'dictionary'
+  word: string
 }
