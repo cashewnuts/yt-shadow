@@ -1,5 +1,9 @@
 # Change log
 
+## 0.2.4
+
+- Add feature of dictionary lookup
+
 ## 0.2.3
 
 - Auto-stop is now configuable
