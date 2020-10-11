@@ -1,4 +1,6 @@
 import React, { PropsWithChildren, useLayoutEffect, useRef } from 'react'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const correctAudio = require('url-loader!../../../resources/sounds/243701__ertfelda__correct.mp3')
 
 export interface CheckAnimationProps {
   width?: number
@@ -40,7 +42,12 @@ const CheckAnimation = (props: PropsWithChildren<CheckAnimationProps>) => {
       requestAnimationFrame(updateCircle)
     }
     updateCircle()
-  }, [])
+    const playCorrectAudio = () => {
+      const audio = new Audio(correctAudio.default)
+      audio.play()
+    }
+    playCorrectAudio()
+  }, [duration])
   return (
     <svg
       width={width}
