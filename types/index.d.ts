@@ -1,1 +1,1 @@
-/// <reference types="@emotion/core" />
+/// <reference types="@emotion/react" />

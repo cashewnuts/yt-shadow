@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
-const WebpackWebExt = require('webpack-webext-plugin')
+const WebExtPlugin = require('web-ext-plugin')
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const Dotenv = require('dotenv-webpack')
@@ -57,8 +57,7 @@ const webpackConfig = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from:
-            'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
+          from: 'node_modules/webextension-polyfill/dist/browser-polyfill.min.js',
         },
       ],
     }),
@@ -79,21 +78,9 @@ if (NODE_ENV === 'development') {
 if (ENABLE_WEBEXT === 'true') {
   webpackConfig.plugins = [
     ...webpackConfig.plugins,
-    new WebpackWebExt({
-      runOnce: false,
-      argv: ['lint', '-s', 'addon'],
-    }),
-    new WebpackWebExt({
-      runOnce: true,
-      maxRetries: 3,
-      argv: [
-        'run',
-        '-s',
-        'addon/',
-        '--reload',
-        '-u',
-        'https://www.youtube.com/watch?v=UfWh3OHYbEM',
-      ],
+    new WebExtPlugin({
+      sourceDir: path.resolve(__dirname, 'addon'),
+      startUrl: 'https://www.youtube.com/watch?v=UfWh3OHYbEM',
     }),
   ]
 }

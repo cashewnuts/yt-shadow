@@ -3,15 +3,8 @@
     ["@babel/preset-env", { "modules": false }],
     "@babel/preset-react",
     "@babel/preset-typescript",
-    [
-      "@emotion/babel-preset-css-prop",
-      {
-        "autoLabel": true,
-        "labelFormat": "[local]"
-      }
-    ]
   ],
-  "plugins": ["@babel/plugin-transform-runtime"],
+  "plugins": ["@babel/plugin-transform-runtime", "@emotion"],
   "env": {
     "production": {
       "presets": ["minify"]

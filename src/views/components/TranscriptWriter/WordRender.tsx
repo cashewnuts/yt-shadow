@@ -10,8 +10,8 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jsx,
   css,
-  InterpolationWithTheme,
-} from '@emotion/core'
+  SerializedStyles,
+} from '@emotion/react'
 import { WordProcessorResult } from './WordProcessor'
 import {
   Menu,
@@ -27,7 +27,7 @@ import { MessageContext } from '@/contexts/MessageContext'
 import { OwlbotResponse } from '@/services/request-message-service'
 const logger = createLogger('WordRender.tsx')
 
-const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
+const styles: { [key: string]: SerializedStyles } = {
   word: css({
     display: 'inline-block',
     cursor: 'pointer',
@@ -56,7 +56,7 @@ const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
   }),
 }
 
-const dictStyle: { [key: string]: InterpolationWithTheme<unknown> } = {
+const dictStyle: { [key: string]: SerializedStyles } = {
   loadingWrapper: css({
     width: '20em',
     height: '10em',

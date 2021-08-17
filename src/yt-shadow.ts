@@ -35,6 +35,7 @@ async function initOrRemove(enable: boolean) {
 }
 
 async function main() {
+  logger.debug('START yt-shadow')
   browser.storage.onChanged.addListener(
     (
       changes: browser.storage.ChangeDict,

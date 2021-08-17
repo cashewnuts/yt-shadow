@@ -13,7 +13,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/*"],
+      "matches": ["https://*.youtube.com/*"],
       "js": ["browser-polyfill.min.js", "yt-shadow.js"],
       "css": ["css/yt-blueprint.css"]
     }

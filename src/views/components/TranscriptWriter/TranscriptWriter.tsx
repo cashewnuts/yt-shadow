@@ -18,8 +18,8 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jsx,
   css,
-  InterpolationWithTheme,
-} from '@emotion/core'
+  SerializedStyles,
+} from '@emotion/react'
 import { WordRender } from './WordRender'
 import { AppContext } from '@/contexts/AppContext'
 import CheckAnimation from '../CheckAnimation'
@@ -54,7 +54,7 @@ export interface TranscriptWriterProps {
   onEscape?: () => void
 }
 
-const styles: { [key: string]: InterpolationWithTheme<unknown> } = {
+const styles: { [key: string]: SerializedStyles } = {
   wrapper: css({
     display: 'flex',
     flexDirection: 'column',
