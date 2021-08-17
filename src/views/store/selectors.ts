@@ -14,6 +14,11 @@ export const selectScriptRnage = createSelector(selectSelf, (state) => {
   }
 })
 
+export const selectAppState = createSelector(
+  selectSelf,
+  (state) => state.appState
+)
+
 export const selectTranscript = createSelector(
   selectSelf,
   (state) => state.transcript.data

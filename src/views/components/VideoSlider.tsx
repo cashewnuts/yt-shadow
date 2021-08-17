@@ -27,13 +27,13 @@ const styles: {
 }
 export interface VideoSliderProps {
   video?: HTMLVideoElement
-  open: boolean
   onRangeOver?: (time: number) => void
 }
 
 const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
+  const open = useAppSelector((state) => state.appState.rangeOpen)
   const scriptRange = useAppSelector(selectScriptRnage)
-  const { video, open, onRangeOver } = props
+  const { video, onRangeOver } = props
   const [currentTime, setCurrentTime] = useState(0)
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(video?.duration || 0)

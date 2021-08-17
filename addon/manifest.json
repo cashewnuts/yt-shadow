@@ -15,7 +15,11 @@
     {
       "matches": ["https://*.youtube.com/*"],
       "js": ["browser-polyfill.min.js", "yt-shadow.js"],
-      "css": ["css/yt-blueprint.css"]
+      "css": [
+        "css/normalize.css",
+        "css/blueprint-popover2.css",
+        "css/yt-blueprint.css"
+      ]
     }
   ],
   "browser_action": {

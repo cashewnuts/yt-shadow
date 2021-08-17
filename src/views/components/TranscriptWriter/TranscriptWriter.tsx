@@ -2,7 +2,6 @@
 /** @jsx jsx */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, {
-  PropsWithChildren,
   ChangeEvent,
   useState,
   KeyboardEvent,
@@ -11,9 +10,12 @@ import React, {
   MutableRefObject,
   SyntheticEvent,
   useCallback,
+  FC,
+  PropsWithChildren,
 } from 'react'
-import { Button, Tooltip } from '@blueprintjs/core'
-import { SRTMeasure } from '../../../models/srt'
+import { Button } from '@blueprintjs/core'
+import { Tooltip2 } from '@blueprintjs/popover2'
+import SRT, { SRTMeasure } from '../../../models/srt'
 import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jsx,
@@ -27,6 +29,10 @@ import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
 import { WordProcessor } from './WordProcessor'
 import { ShortcutContext, ShortcutKey } from '@/contexts/ShortcutContext'
+import { AppDispatch, RootState } from '@/views/store'
+import { AppStateSlice, AppStateState } from '@/views/store/slicers/app-state'
+import { TranscriptSlice } from '@/views/store/slicers/transcript'
+import { connect, ConnectedProps } from 'react-redux'
 const logger = createLogger('TranscriptWriter.tsx')
 
 export type onInputType = {
@@ -39,11 +45,11 @@ export interface TranscriptWriterProps {
   text?: SRTMeasure
   videoId?: string
   inputRef: MutableRefObject<HTMLInputElement | null>
+  video?: HTMLVideoElement
+  srt?: SRT
   onLoad?: (text: SRTMeasure, value: onInputType) => void
   onPlay?: () => void
   onPause?: () => void
-  onNext?: () => void
-  onPrevious?: () => void
   onRepeat?: () => void
   onRangeOpen?: () => void
   onFocus?: (focus: boolean) => void
@@ -53,6 +59,54 @@ export interface TranscriptWriterProps {
   onHelp?: () => void
   onEscape?: () => void
 }
+
+const mapState = (state: RootState) => ({
+  autoStop: state.appState.autoStop,
+  appState: state.appState,
+})
+
+const mergeProps = (
+  mapProps: ReturnType<typeof mapState>,
+  dispatchProps: any,
+  ownProps: TranscriptWriterProps
+) => {
+  const { video, srt } = ownProps
+  const { appState } = mapProps
+  const { dispatch } = dispatchProps
+  const nextPrevHandler = (crement: 1 | -1) => {
+    if (!video || !srt) return
+    const idx =
+      srt[appState.srtGrainSize].findIndex(
+        (measure: SRTMeasure) => video.currentTime < measure.start
+      ) - 1
+    const timeoutOffset = appState.pauseTimeoutId ? 1 : 0
+    dispatch(AppStateSlice.actions.resetWaitState(100))
+    const currentParagraph = srt[appState.srtGrainSize][idx - timeoutOffset]
+    const matchedParagraph =
+      srt[appState.srtGrainSize][idx + crement - timeoutOffset]
+    if (
+      crement === -1 &&
+      Math.abs(currentParagraph.start - video.currentTime) > 0.5
+    ) {
+      video.currentTime = currentParagraph.start
+    } else if (matchedParagraph) {
+      dispatch(TranscriptSlice.actions.updateTranscript(matchedParagraph))
+      video.currentTime = matchedParagraph.start
+    }
+  }
+  return {
+    ...ownProps,
+    ...mapProps,
+    onNext: () => nextPrevHandler(1),
+    onPrevious: () => nextPrevHandler(-1),
+  }
+}
+
+const connector = connect(mapState, null, mergeProps)
+
+type PropsFromRedux = ConnectedProps<typeof connector>
+
+type Props = PropsFromRedux & PropsWithChildren<TranscriptWriterProps>
 
 const styles: { [key: string]: SerializedStyles } = {
   wrapper: css({
@@ -102,7 +156,7 @@ const styles: { [key: string]: SerializedStyles } = {
   }),
 }
 
-const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
+const TranscriptWriter = (props: Props) => {
   const { text, videoId, inputRef } = props
   const [inputValue, setInputValue] = useState('')
   const [inputEnded, setInputEnded] = useState(false)
@@ -372,13 +426,13 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           (result.correct ? (
             <CheckAnimation width={30} height={30} duration={450} />
           ) : (
-            <Tooltip content={showDiff ? 'correct' : 'diff'}>
+            <Tooltip2 content={showDiff ? 'correct' : 'diff'}>
               <Button
                 css={styles.diffButton}
                 icon={showDiff ? 'clean' : 'delta'}
                 onClick={toggleShowDiff}
               />
-            </Tooltip>
+            </Tooltip2>
           ))}
       </div>
       <div css={styles.paragraphContainer}>
@@ -415,16 +469,16 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
           {text && (
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               {!result.show && (
-                <Tooltip>
+                <Tooltip2>
                   <Button
                     icon={result.skip ? 'lightbulb' : 'eject'}
                     text={result.skip ? 'unskip' : 'skip'}
                     onClick={skipToggleHandler}
                   />
-                </Tooltip>
+                </Tooltip2>
               )}
               {!result.skip && (
-                <Tooltip>
+                <Tooltip2>
                   {result.show ? (
                     <div>
                       <Button
@@ -454,7 +508,7 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
                       onClick={showAnswerClickHandler}
                     />
                   )}
-                </Tooltip>
+                </Tooltip2>
               )}
             </div>
           )}
@@ -464,4 +518,6 @@ const TranscriptWriter = (props: PropsWithChildren<TranscriptWriterProps>) => {
   )
 }
 
-export default TranscriptWriter
+export default connector(TranscriptWriter) as unknown as FC<
+  PropsWithChildren<TranscriptWriterProps>
+>

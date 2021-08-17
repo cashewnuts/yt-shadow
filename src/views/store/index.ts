@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { AppStateSlice } from './slicers/app-state'
 import { TranscriptSlice } from './slicers/transcript'
 
 export const store = configureStore({
   reducer: {
+    appState: AppStateSlice.reducer,
     transcript: TranscriptSlice.reducer,
   },
 })

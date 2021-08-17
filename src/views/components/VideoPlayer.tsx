@@ -1,22 +1,110 @@
-import React, {
-  PropsWithChildren,
-  useEffect,
-  CSSProperties,
-  useState,
-} from 'react'
-import { Button, Tooltip } from '@blueprintjs/core'
+import React, { useEffect, CSSProperties, useState, FC } from 'react'
+import { Button } from '@blueprintjs/core'
+import { Tooltip2 } from '@blueprintjs/popover2'
+import { AppDispatch, RootState } from '../store'
+import { connect, ConnectedProps } from 'react-redux'
+import { AppStateSlice } from '../store/slicers/app-state'
+import SRT, { SRTMeasure } from '@/models/srt'
+import { TranscriptSlice } from '../store/slicers/transcript'
 
 export interface VideoPlayerProps {
   video: HTMLVideoElement
-  autoStop: boolean
-  onToggle?: () => void
-  onNext?: () => void
-  onPrevious?: () => void
-  onRangeOpen?: () => void
-  onRepeat?: () => void
-  onAutoStopToggle?: () => void
-  onHelp?: () => void
+  srt?: SRT
 }
+
+const mapState = (state: RootState) => ({
+  autoStop: state.appState.autoStop,
+  transcript: state.transcript.data,
+  appState: state.appState,
+})
+const mapDispatch = (
+  dispatch: AppDispatch,
+  {
+    transcript,
+    video,
+    appState,
+    srt,
+  }: ReturnType<typeof mapState> & VideoPlayerProps
+) => {
+  return {
+    dispatch,
+    onToggle: () => {
+      if (!video || !srt) return
+      const prop = srt[appState.srtGrainSize]
+      const currentTime = video.currentTime
+      const matchedScript = (prop as Array<SRTMeasure>).find(
+        (t) => t.start <= currentTime && currentTime < t.start + t.dur
+      )
+      if (!matchedScript) return
+      dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
+      if (matchedScript !== transcript) {
+        dispatch(AppStateSlice.actions.setWaitMillisec(500))
+      } else {
+        dispatch(AppStateSlice.actions.resetWaitState(100))
+      }
+      if (video.paused) {
+        video.play()
+      } else {
+        video.pause()
+      }
+    },
+    onRangeOpen: () => {
+      dispatch(AppStateSlice.actions.toggleRangeOpen())
+    },
+    onRepeat: () => {
+      if (transcript && video) {
+        dispatch(AppStateSlice.actions.resetWaitState())
+        video.currentTime = transcript.start
+        video.play()
+      }
+    },
+    onAutoStopToggle: () => dispatch(AppStateSlice.actions.toggleAutoStop()),
+    onHelp: () => dispatch(AppStateSlice.actions.toggleHelpOpen()),
+  }
+}
+
+const mergeProps = (
+  mapProps: ReturnType<typeof mapState>,
+  dispatchProps: ReturnType<typeof mapDispatch>,
+  ownProps: VideoPlayerProps
+) => {
+  const { video, srt } = ownProps
+  const { appState } = mapProps
+  const { dispatch } = dispatchProps
+  const nextPrevHandler = (crement: 1 | -1) => {
+    if (!video || !srt) return
+    const idx =
+      srt[appState.srtGrainSize].findIndex(
+        (measure: SRTMeasure) => video.currentTime < measure.start
+      ) - 1
+    const timeoutOffset = appState.pauseTimeoutId ? 1 : 0
+    dispatch(AppStateSlice.actions.resetWaitState(100))
+    const currentParagraph = srt[appState.srtGrainSize][idx - timeoutOffset]
+    const matchedParagraph =
+      srt[appState.srtGrainSize][idx + crement - timeoutOffset]
+    if (
+      crement === -1 &&
+      Math.abs(currentParagraph.start - video.currentTime) > 0.5
+    ) {
+      video.currentTime = currentParagraph.start
+    } else if (matchedParagraph) {
+      dispatch(TranscriptSlice.actions.updateTranscript(matchedParagraph))
+      video.currentTime = matchedParagraph.start
+    }
+  }
+  return {
+    ...ownProps,
+    ...mapProps,
+    onNext: () => nextPrevHandler(1),
+    onPrevious: () => nextPrevHandler(-1),
+  }
+}
+
+const connector = connect(mapState, mapDispatch, mergeProps)
+
+type PropsFromRedux = ConnectedProps<typeof connector>
+
+type Props = PropsFromRedux & VideoPlayerProps
 
 const styles: {
   [key: string]: CSSProperties
@@ -34,7 +122,7 @@ const styles: {
   },
 }
 
-const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
+export const VideoPlayer = (props: Props) => {
   const { video, autoStop } = props
   const [isPlaying, setIsPlaying] = useState(!video.paused)
   useEffect(() => {
@@ -50,35 +138,39 @@ const VideoPlayer = (props: PropsWithChildren<VideoPlayerProps>) => {
     <div style={styles.wrapper}>
       <div style={styles.playerWrapper}>
         <div style={styles.alignHorizontal}>
-          <Tooltip content="help">
+          <Tooltip2 content={<span>help</span>}>
             <Button icon="help" onClick={props.onHelp} />
-          </Tooltip>
-          <Tooltip content="range slider">
+          </Tooltip2>
+          <Tooltip2 content="range slider">
             <Button icon="flow-review" onClick={props.onRangeOpen} />
-          </Tooltip>
+          </Tooltip2>
         </div>
         <div style={styles.alignHorizontal}>
-          <Tooltip content="replay">
+          <Tooltip2 content="replay">
             <Button icon="redo" onClick={props.onRepeat} />
-          </Tooltip>
-          <Tooltip content={autoStop ? "Disable AutoStop" : "AutoStop"}>
-            <Button icon={autoStop ? "stopwatch" : "automatic-updates"} intent={autoStop ? "primary" : "none"} onClick={props.onAutoStopToggle} />
-          </Tooltip>
+          </Tooltip2>
+          <Tooltip2 content={autoStop ? 'Disable AutoStop' : 'AutoStop'}>
+            <Button
+              icon={autoStop ? 'stopwatch' : 'automatic-updates'}
+              intent={autoStop ? 'primary' : 'none'}
+              onClick={props.onAutoStopToggle}
+            />
+          </Tooltip2>
         </div>
-        <Tooltip content={isPlaying ? 'stop' : 'play'}>
+        <Tooltip2 content={isPlaying ? 'stop' : 'play'}>
           <Button icon={isPlaying ? 'stop' : 'play'} onClick={props.onToggle} />
-        </Tooltip>
+        </Tooltip2>
         <div style={styles.alignHorizontal}>
-          <Tooltip content="previous">
+          <Tooltip2 content="previous">
             <Button icon="arrow-left" onClick={props.onPrevious} />
-          </Tooltip>
-          <Tooltip content="next">
+          </Tooltip2>
+          <Tooltip2 content="next">
             <Button icon="arrow-right" onClick={props.onNext} />
-          </Tooltip>
+          </Tooltip2>
         </div>
       </div>
     </div>
   )
 }
 
-export default VideoPlayer
+export default connector(VideoPlayer) as unknown as FC<VideoPlayerProps>

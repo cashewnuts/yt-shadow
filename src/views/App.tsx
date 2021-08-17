@@ -6,6 +6,7 @@ import React, {
   useRef,
   useContext,
   memo,
+  useCallback,
 } from 'react'
 import SubtitleLoader from './components/SubtitleLoader'
 import Spinner from './components/Spinner'
@@ -13,7 +14,6 @@ import YoutubeVideo from './components/YoutubeVideo'
 import SRT, { SRTMeasure } from '../models/srt'
 import VideoPlayer from './components/VideoPlayer'
 import TranscriptWriter, { onInputType } from './components/TranscriptWriter'
-import { AppContextConsumer } from '../contexts/AppContext'
 import VideoSlider from './components/VideoSlider'
 import { createLogger } from '@/helpers/logger'
 import { MessageContext } from '@/contexts/MessageContext'
@@ -23,7 +23,12 @@ import ShortcutHelp from './components/ShortcutHelp'
 import { Button, Card } from '@blueprintjs/core'
 import { useAppDispatch, useAppSelector } from './store/hooks'
 import { TranscriptSlice, patchTranscript } from './store/slicers/transcript'
-import { selectTranscript, selectTranscriptState } from './store/selectors'
+import {
+  selectAppState,
+  selectTranscript,
+  selectTranscriptState,
+} from './store/selectors'
+import { AppStateSlice } from './store/slicers/app-state'
 const logger = createLogger('App.tsx')
 
 const MemoTranscriptDetails = memo(TranscriptDetails)
@@ -85,46 +90,23 @@ const styles: { [key: string]: CSSProperties } = {
   },
 }
 
-enum SRTPropName {
-  paragraphs = 'paragraphs',
-  texts = 'texts',
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
+  const appState = useAppSelector(selectAppState)
   const transcript = useAppSelector(selectTranscript)
   const transcriptState = useAppSelector(selectTranscriptState)
   const dispatch = useAppDispatch()
   const { transcriptMessage } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
-  const [helpOpen, setHelpOpen] = useState(false)
   const srtRef = useRef<SRT>()
   const videoRef = useRef<HTMLVideoElement>()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isAds, setIsAds] = useState(false)
-  const [appState, setAppState] = useState<{
-    pauseTimeoutId: number | null
-    waitMillisec: number
-    srtGrainSize: SRTPropName
-    autoStop: boolean
-  }>({
-    pauseTimeoutId: null,
-    waitMillisec: 100,
-    srtGrainSize: SRTPropName.texts,
-    autoStop: true,
-  })
   const [rangeOpen, setRangeOpen] = useState(false)
   const [hasInputFocus, setInputFocus] = useState(false)
 
   const clearPauseTimeoutId = () => {
-    setAppState({
-      ...appState,
-      waitMillisec: 100,
-      pauseTimeoutId: null,
-    })
-  }
-  const updateTranscript = (text: SRTMeasure) => {
-    dispatch(TranscriptSlice.actions.updateTranscript(text))
+    dispatch(AppStateSlice.actions.resetWaitState(100))
   }
   const incrementOrClearTranscript = () => {
     if (!videoRef.current || !srtRef.current) return
@@ -136,14 +118,12 @@ const App = (props: PropsWithChildren<unknown>) => {
     )
     if (!matchedScript) return
     logger.debug('matchedScript', matchedScript)
-    updateTranscript(matchedScript)
+    dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
     if (matchedScript !== transcript) {
-      setAppState({
-        ...appState,
-        waitMillisec: 500,
-      })
+      dispatch(AppStateSlice.actions.setWaitMillisec(500))
+    } else {
+      dispatch(AppStateSlice.actions.resetWaitState(100))
     }
-    clearPauseTimeoutId()
   }
   const updateVideoId = () => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -166,10 +146,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     logger.debug('onSRTLoaded', srt, videoRef)
     srtRef.current = srt
     checkUpdateIsAds()
-    setAppState({
-      ...appState,
-      waitMillisec: 500,
-    })
+    dispatch(AppStateSlice.actions.setWaitMillisec(500))
     checkUpdateIsAds()
   }
   const handleError = (err: Error) => {
@@ -197,10 +174,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       !transcriptState.skip
     ) {
       // set dummy pauseTimeoutId
-      setAppState({
-        ...appState,
-        pauseTimeoutId: 9999,
-      })
+      dispatch(AppStateSlice.actions.setPauseTimeoutId(9999))
       let savedScript = null
       try {
         if (videoId && transcript && transcript.start) {
@@ -226,29 +200,14 @@ const App = (props: PropsWithChildren<unknown>) => {
         const timeoutId = window.setTimeout(() => {
           videoRef.current?.pause()
         }, appState.waitMillisec)
-        setAppState({
-          ...appState,
-          pauseTimeoutId: timeoutId,
-        })
+        dispatch(AppStateSlice.actions.setPauseTimeoutId(timeoutId))
       } else {
-        updateTranscript(matchedScript)
+        dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
         clearPauseTimeoutId()
       }
     } else {
-      updateTranscript(matchedScript)
+      dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
       clearPauseTimeoutId()
-    }
-  }
-  const handleToggleOnVideoPlayer = () => {
-    const video = videoRef.current
-    if (!video) return
-
-    logger.debug('handleToggleOnVideoPlayer')
-    incrementOrClearTranscript()
-    if (video.paused) {
-      video.play()
-    } else {
-      video.pause()
     }
   }
   const handlePlayPauseOnTranscriptWriter = (bool: boolean) => () => {
@@ -263,38 +222,9 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleRangeOpen = () => {
     setRangeOpen(!rangeOpen)
   }
-  const handleNextPrevTranscript = (crement: 1 | -1) => {
-    return () => {
-      if (!videoRef.current || !srtRef.current) return
-      const srt = srtRef.current
-      const video = videoRef.current
-      const idx =
-        srt[appState.srtGrainSize].findIndex(
-          (measure: SRTMeasure) => video.currentTime < measure.start
-        ) - 1
-      logger.debug('next or prev', idx)
-      const timeoutOffset = appState.pauseTimeoutId ? 1 : 0
-      clearPauseTimeoutId()
-      const currentParagraph = srt[appState.srtGrainSize][idx - timeoutOffset]
-      const matchedParagraph =
-        srt[appState.srtGrainSize][idx + crement - timeoutOffset]
-      if (
-        crement === -1 &&
-        Math.abs(currentParagraph.start - video.currentTime) > 0.5
-      ) {
-        video.currentTime = currentParagraph.start
-      } else if (matchedParagraph) {
-        updateTranscript(matchedParagraph)
-        video.currentTime = matchedParagraph.start
-      }
-    }
-  }
-  const handleAutoStopToggle = () => {
-    setAppState({
-      ...appState,
-      autoStop: !appState.autoStop,
-    })
-  }
+  const handleAutoStopToggle = useCallback(() => {
+    dispatch(AppStateSlice.actions.toggleAutoStop())
+  }, [dispatch])
   const handleLoadTranscriptWriter = (text: SRTMeasure, value: onInputType) => {
     logger.info({ text, value })
     dispatch(
@@ -364,115 +294,94 @@ const App = (props: PropsWithChildren<unknown>) => {
       logger.error('dbMessageService.patch for skip', err)
     }
   }
-  const handleHelp = () => {
-    setHelpOpen(!helpOpen)
-  }
-  const handleEscape = () => {
-    setHelpOpen(false)
+  const handleHelpClose = () => {
+    dispatch(AppStateSlice.actions.setHelpOpen(false))
   }
   const handleClickWrapper = () => {
     inputRef.current?.focus()
   }
   const handleRepeatVideo = () => {
     if (transcript && videoRef.current) {
-      setAppState({
-        ...appState,
-        waitMillisec: 500,
-        pauseTimeoutId: null,
-      })
+      dispatch(AppStateSlice.actions.resetWaitState())
       videoRef.current.currentTime = transcript.start
       videoRef.current.play()
     }
   }
   return (
-    <AppContextConsumer>
-      {({ focus }) => (
-        <Card
-          interactive={true}
-          style={{
-            ...styles.wrapper,
-            boxShadow: focus
-              ? '0px 0px 8px rgba(208, 0, 0, 0.5)'
-              : '0px 0px 4px rgba(40, 40, 40, 0.5)',
-          }}
-          onClick={handleClickWrapper}
+    <Card
+      interactive={true}
+      style={{
+        ...styles.wrapper,
+      }}
+      onClick={handleClickWrapper}
+    >
+      <div
+        style={{
+          ...styles.help,
+          display: appState.helpOpen ? 'block' : 'none',
+        }}
+      >
+        <div style={styles.helpCloseButton}>
+          <Button icon="cross" onClick={handleHelpClose} />
+        </div>
+        <ShortcutHelp />
+      </div>
+      <div style={styles.header}>
+        <TitleLabel />
+      </div>
+      <div style={styles.playerContainer}>
+        <YoutubeVideo
+          onLoaded={({ video }) => (videoRef.current = video)}
+          onPause={() => clearPauseTimeoutId()}
+          onPlay={() => clearPauseTimeoutId()}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadStart={handleLoadStart}
+          render={(video) => <VideoPlayer video={video} srt={srtRef.current} />}
+        />
+      </div>
+      <div style={styles.userInputContainer}>
+        <VideoSlider video={videoRef.current} />
+        <SubtitleLoader
+          videoId={videoId}
+          onSRTLoaded={handleSubtitleLoaded}
+          onError={handleError}
+          render={({ loading, subtitleNotExists }) => (
+            <>
+              {(loading || isAds) && (
+                <div style={styles.spinner}>
+                  <Spinner />
+                </div>
+              )}
+              {subtitleNotExists && (
+                <div>
+                  <h1>Subtitle Not Exists</h1>
+                </div>
+              )}
+            </>
+          )}
+        />
+        <TranscriptWriter
+          text={transcript}
+          videoId={videoId}
+          inputRef={inputRef}
+          video={videoRef.current}
+          srt={srtRef.current}
+          onFocus={(focus) => setInputFocus(focus)}
+          onRangeOpen={handleRangeOpen}
+          onLoad={handleLoadTranscriptWriter}
+          onPlay={handlePlayPauseOnTranscriptWriter(true)}
+          onPause={handlePlayPauseOnTranscriptWriter(false)}
+          onRepeat={handleRepeatVideo}
+          onInput={handleTranscriptInput}
+          onSkip={handleSkip}
+          onAutoStop={handleAutoStopToggle}
+          onHelp={() => dispatch(AppStateSlice.actions.toggleHelpOpen)}
+          onEscape={handleHelpClose}
         >
-          <div style={{ ...styles.help, display: helpOpen ? 'block' : 'none' }}>
-            <div style={styles.helpCloseButton}>
-              <Button icon="cross" onClick={setHelpOpen.bind(null, false)} />
-            </div>
-            <ShortcutHelp />
-          </div>
-          <div style={styles.header}>
-            <TitleLabel />
-          </div>
-          <div style={styles.playerContainer}>
-            <YoutubeVideo
-              onLoaded={({ video }) => (videoRef.current = video)}
-              onPause={() => clearPauseTimeoutId()}
-              onPlay={() => clearPauseTimeoutId()}
-              onTimeUpdate={handleTimeUpdate}
-              onLoadStart={handleLoadStart}
-              render={(video) => (
-                <VideoPlayer
-                  video={video}
-                  autoStop={appState.autoStop}
-                  onToggle={handleToggleOnVideoPlayer}
-                  onRangeOpen={handleRangeOpen}
-                  onRepeat={handleRepeatVideo}
-                  onNext={handleNextPrevTranscript(1)}
-                  onPrevious={handleNextPrevTranscript(-1)}
-                  onAutoStopToggle={handleAutoStopToggle}
-                  onHelp={handleHelp}
-                />
-              )}
-            />
-          </div>
-          <div style={styles.userInputContainer}>
-            <VideoSlider video={videoRef.current} open={rangeOpen} />
-            <SubtitleLoader
-              videoId={videoId}
-              onSRTLoaded={handleSubtitleLoaded}
-              onError={handleError}
-              render={({ loading, subtitleNotExists }) => (
-                <>
-                  {(loading || isAds) && (
-                    <div style={styles.spinner}>
-                      <Spinner />
-                    </div>
-                  )}
-                  {subtitleNotExists && (
-                    <div>
-                      <h1>Subtitle Not Exists</h1>
-                    </div>
-                  )}
-                </>
-              )}
-            />
-            <TranscriptWriter
-              text={transcript}
-              videoId={videoId}
-              inputRef={inputRef}
-              onFocus={(focus) => setInputFocus(focus)}
-              onRangeOpen={handleRangeOpen}
-              onLoad={handleLoadTranscriptWriter}
-              onPlay={handlePlayPauseOnTranscriptWriter(true)}
-              onPause={handlePlayPauseOnTranscriptWriter(false)}
-              onRepeat={handleRepeatVideo}
-              onNext={handleNextPrevTranscript(1)}
-              onPrevious={handleNextPrevTranscript(-1)}
-              onInput={handleTranscriptInput}
-              onSkip={handleSkip}
-              onAutoStop={handleAutoStopToggle}
-              onHelp={handleHelp}
-              onEscape={handleEscape}
-            >
-              <MemoTranscriptDetails videoId={videoId} />
-            </TranscriptWriter>
-          </div>
-        </Card>
-      )}
-    </AppContextConsumer>
+          <MemoTranscriptDetails videoId={videoId} />
+        </TranscriptWriter>
+      </div>
+    </Card>
   )
 }
 

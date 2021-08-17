@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { dest, task, src } = require('gulp')
 var rename = require('gulp-rename')
 const cssWrap = require('gulp-css-wrap')
