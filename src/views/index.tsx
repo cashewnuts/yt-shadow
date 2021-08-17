@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import React, { memo } from 'react'
 import ReactDOM from 'react-dom'
 

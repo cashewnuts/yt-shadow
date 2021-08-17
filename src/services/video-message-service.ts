@@ -3,9 +3,10 @@ import { IVideo } from '@/models/video'
 import DatabaseMessageService from './database-message-service'
 import { createLogger } from '@/helpers/logger'
 import { VideoIndex } from '@/storages/shadowing-db'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const logger = createLogger('video-message-service.ts')
 
-export default class VideoMessageService extends DatabaseMessageService {
+export class VideoMessageService extends DatabaseMessageService {
   async upsert(data: IVideo) {
     const action: VideoUpsertAction = {
       action: 'database',
@@ -26,3 +27,5 @@ export default class VideoMessageService extends DatabaseMessageService {
     return this.postMessage<VideoBulkUpsertAction, boolean>(action)
   }
 }
+
+export default new VideoMessageService()

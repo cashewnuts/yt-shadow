@@ -3,10 +3,11 @@ import React, {
   useEffect,
   useState,
   CSSProperties,
-  ChangeEvent,
 } from 'react'
 import { createLogger } from '@/helpers/logger'
 import { Slider } from '@blueprintjs/core'
+import { selectScriptRnage } from '../store/selectors'
+import { useAppSelector } from '../store/hooks'
 const logger = createLogger('VideoSlider.tsx')
 
 const styles: {
@@ -26,20 +27,20 @@ const styles: {
 }
 export interface VideoSliderProps {
   video?: HTMLVideoElement
-  start?: number
-  end?: number
   open: boolean
   onRangeOver?: (time: number) => void
 }
 
 const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
-  const { video, start, end, open, onRangeOver } = props
+  const scriptRange = useAppSelector(selectScriptRnage)
+  const { video, open, onRangeOver } = props
   const [currentTime, setCurrentTime] = useState(0)
   const [min, setMin] = useState(0)
   const [max, setMax] = useState(video?.duration || 0)
   useEffect(() => {
-    logger.debug('useEffect1', video, start, end)
-    if (!video) return
+    logger.debug('useEffect1', video, scriptRange)
+    if (!scriptRange || !video) return
+    const { start, end } = scriptRange
     const updateCurrentTime = () => {
       const currentTime = video.currentTime || 0
       setCurrentTime(currentTime)
@@ -51,7 +52,7 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
     if (end) {
       setMax(end)
     }
-  }, [start, end, video])
+  }, [scriptRange, video])
   useEffect(() => {
     if (!video) return
     const updateCurrentTime = () => {
@@ -59,7 +60,7 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
       setCurrentTime(currentTime)
     }
     const onRangeOverChecker = () => {
-      if ((end || video.duration) < video.currentTime) {
+      if ((scriptRange?.end || video.duration) < video.currentTime) {
         if (onRangeOver) {
           onRangeOver(video.currentTime)
         }
@@ -73,7 +74,7 @@ const VideoSlider = (props: PropsWithChildren<VideoSliderProps>) => {
     return () => {
       video.removeEventListener('timeupdate', handleTimeupdate)
     }
-  }, [video, end, onRangeOver])
+  }, [video, scriptRange, onRangeOver])
   const [rangeOpen, setRangeOpen] = useState(open)
   useEffect(() => {
     setRangeOpen(open)

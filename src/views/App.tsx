@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useRef,
   useContext,
+  memo,
 } from 'react'
 import SubtitleLoader from './components/SubtitleLoader'
 import Spinner from './components/Spinner'
@@ -20,7 +21,12 @@ import TranscriptDetails from './components/TranscriptDetails'
 import TitleLabel from './components/TitleLabel'
 import ShortcutHelp from './components/ShortcutHelp'
 import { Button, Card } from '@blueprintjs/core'
+import { useAppDispatch, useAppSelector } from './store/hooks'
+import { TranscriptSlice, patchTranscript } from './store/slicers/transcript'
+import { selectTranscript, selectTranscriptState } from './store/selectors'
 const logger = createLogger('App.tsx')
+
+const MemoTranscriptDetails = memo(TranscriptDetails)
 
 const styles: { [key: string]: CSSProperties } = {
   wrapper: {
@@ -86,6 +92,9 @@ enum SRTPropName {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const App = (props: PropsWithChildren<unknown>) => {
+  const transcript = useAppSelector(selectTranscript)
+  const transcriptState = useAppSelector(selectTranscriptState)
+  const dispatch = useAppDispatch()
   const { transcriptMessage } = useContext(MessageContext)
   const [videoId, setVideoId] = useState<string>()
   const [helpOpen, setHelpOpen] = useState(false)
@@ -93,10 +102,6 @@ const App = (props: PropsWithChildren<unknown>) => {
   const videoRef = useRef<HTMLVideoElement>()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isAds, setIsAds] = useState(false)
-  const [scriptRange, setScriptRange] = useState<{
-    start: number
-    end: number
-  }>()
   const [appState, setAppState] = useState<{
     pauseTimeoutId: number | null
     waitMillisec: number
@@ -107,17 +112,6 @@ const App = (props: PropsWithChildren<unknown>) => {
     waitMillisec: 100,
     srtGrainSize: SRTPropName.texts,
     autoStop: true,
-  })
-  const [transcript, setTranscript] = useState<SRTMeasure>()
-  const [transcriptState, setTranscriptState] = useState<{
-    text?: SRTMeasure
-    done: boolean
-    correct: boolean
-    skip: boolean
-  }>({
-    done: false,
-    correct: false,
-    skip: false,
   })
   const [rangeOpen, setRangeOpen] = useState(false)
   const [hasInputFocus, setInputFocus] = useState(false)
@@ -130,11 +124,7 @@ const App = (props: PropsWithChildren<unknown>) => {
     })
   }
   const updateTranscript = (text: SRTMeasure) => {
-    setScriptRange({
-      start: text.start,
-      end: text.start + text.dur,
-    })
-    setTranscript(text)
+    dispatch(TranscriptSlice.actions.updateTranscript(text))
   }
   const incrementOrClearTranscript = () => {
     if (!videoRef.current || !srtRef.current) return
@@ -145,9 +135,9 @@ const App = (props: PropsWithChildren<unknown>) => {
       (t) => t.start <= currentTime && currentTime < t.start + t.dur
     )
     if (!matchedScript) return
-    logger.debug('matchedScript', matchedScript, transcript)
+    logger.debug('matchedScript', matchedScript)
+    updateTranscript(matchedScript)
     if (matchedScript !== transcript) {
-      updateTranscript(matchedScript)
       setAppState({
         ...appState,
         waitMillisec: 500,
@@ -214,7 +204,7 @@ const App = (props: PropsWithChildren<unknown>) => {
       let savedScript = null
       try {
         if (videoId && transcript && transcript.start) {
-          savedScript = await transcriptMessage?.get(
+          savedScript = await transcriptMessage.get(
             window.location.host,
             videoId,
             transcript.start
@@ -306,13 +296,17 @@ const App = (props: PropsWithChildren<unknown>) => {
     })
   }
   const handleLoadTranscriptWriter = (text: SRTMeasure, value: onInputType) => {
-    setTranscriptState({
-      ...transcriptState,
-      text: text,
-      done: value.done,
-      correct: value.correct,
-      skip: value.skip || false,
-    })
+    logger.info({ text, value })
+    dispatch(
+      TranscriptSlice.actions.update({
+        data: text,
+        state: {
+          done: value.done,
+          correct: value.correct,
+          skip: value.skip || false,
+        },
+      })
+    )
   }
   const handleTranscriptInput = async (
     text: SRTMeasure,
@@ -320,24 +314,26 @@ const App = (props: PropsWithChildren<unknown>) => {
   ) => {
     logger.debug('handleTranscriptInput', value)
     if (!transcript || !videoId) return
-    const patchTranscript = {
+    const patchData = {
       host: window.location.host,
       videoId,
       start: text.start,
       ...value,
     }
     try {
-      const result = await transcriptMessage?.patch(patchTranscript)
-      setTranscriptState({
-        ...transcriptState,
-        text,
-        done: value.done,
-        correct: value.correct,
-        skip: value.skip || false,
-      })
+      await dispatch(
+        patchTranscript({
+          message: patchData,
+          transcript: text,
+          state: {
+            done: value.done,
+            correct: value.correct,
+            skip: value.skip || false,
+          },
+        })
+      ).unwrap()
       logger.info('dbMessageService.patch for input', {
-        patchTranscript,
-        result,
+        patchData,
       })
     } catch (err) {
       logger.error('dbMessageService.patch for input', err)
@@ -346,21 +342,23 @@ const App = (props: PropsWithChildren<unknown>) => {
   const handleSkip = async (skip: boolean) => {
     logger.debug('skip', skip)
     if (!transcript || !videoId) return
-    const patchTranscript = {
+    const patchData = {
       host: window.location.host,
       videoId,
       start: transcript.start,
       skip,
     }
     try {
-      const result = await transcriptMessage?.patch(patchTranscript)
-      setTranscriptState({
-        ...transcriptState,
-        skip,
-      })
+      await dispatch(
+        patchTranscript({
+          message: patchData,
+          state: {
+            skip,
+          },
+        })
+      ).unwrap()
       logger.info('dbMessageService.patch for skip', {
-        patchTranscript,
-        result,
+        patchData,
       })
     } catch (err) {
       logger.error('dbMessageService.patch for skip', err)
@@ -431,12 +429,7 @@ const App = (props: PropsWithChildren<unknown>) => {
             />
           </div>
           <div style={styles.userInputContainer}>
-            <VideoSlider
-              video={videoRef.current}
-              open={rangeOpen}
-              start={scriptRange?.start}
-              end={scriptRange?.end}
-            />
+            <VideoSlider video={videoRef.current} open={rangeOpen} />
             <SubtitleLoader
               videoId={videoId}
               onSRTLoaded={handleSubtitleLoaded}
@@ -474,11 +467,7 @@ const App = (props: PropsWithChildren<unknown>) => {
               onHelp={handleHelp}
               onEscape={handleEscape}
             >
-              <TranscriptDetails
-                text={transcriptState.text}
-                videoId={videoId}
-                state={transcriptState}
-              />
+              <MemoTranscriptDetails videoId={videoId} />
             </TranscriptWriter>
           </div>
         </Card>

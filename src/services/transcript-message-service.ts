@@ -9,13 +9,10 @@ import { ITranscript } from '@/models/transcript'
 import { createLogger } from '@/helpers/logger'
 import { TranscriptIndex } from '@/storages/shadowing-db'
 import DatabaseMessageService from './database-message-service'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const logger = createLogger('transcript-message-service.ts')
 
-export default class TranscriptMessageService extends DatabaseMessageService {
-  constructor(port: browser.runtime.Port) {
-    super(port)
-  }
-
+export class TranscriptMessageService extends DatabaseMessageService {
   async bulkUpsert(data: ITranscript | ITranscript[]) {
     const transcripts = Array.isArray(data) ? data : [data]
     const action: TranscriptBulkUpsertAction = {
@@ -84,3 +81,5 @@ export default class TranscriptMessageService extends DatabaseMessageService {
     })
   }
 }
+
+export default new TranscriptMessageService()

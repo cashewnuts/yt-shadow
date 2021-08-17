@@ -4,32 +4,29 @@ import React, {
   useContext,
   useState,
 } from 'react'
-import { SRTMeasure } from '@/models/srt'
 import { MessageContext } from '@/contexts/MessageContext'
 import { createLogger } from '@/helpers/logger'
+import { useAppSelector } from '../store/hooks'
+import { selectTranscript } from '../store/selectors'
 const logger = createLogger('TranscriptDetails.tsx')
 
 export interface TranscriptDetailsProps {
-  text?: SRTMeasure
   videoId?: string
-  state?: {
-    done: boolean
-    correct: boolean
-  }
 }
 
 const TranscriptDetails = (
   props: PropsWithChildren<TranscriptDetailsProps>
 ) => {
   const { transcriptMessage } = useContext(MessageContext)
-  const { text, videoId, state } = props
+  const transcript = useAppSelector(selectTranscript)
+  const { videoId } = props
   const [infos, setInfos] = useState({
     doneCount: 0,
     totalLength: 0,
   })
 
   useEffect(() => {
-    if (!text || !videoId || !transcriptMessage) return
+    if (!transcript || !videoId || !transcriptMessage) return
     const asyncFn = async () => {
       const totalScripts = await transcriptMessage.find(
         window.location.host,
@@ -40,7 +37,7 @@ const TranscriptDetails = (
       )
       logger.debug('dbMessageService.find { skip: false }', totalScripts)
       const doneAndCorrectScripts = totalScripts.filter(
-        (script) => script.done && script.correct && script.start !== text.start
+        (script) => script.done && script.correct
       )
       setInfos({
         doneCount: doneAndCorrectScripts.length,
@@ -48,12 +45,11 @@ const TranscriptDetails = (
       })
     }
     asyncFn()
-  }, [transcriptMessage, text, videoId])
+  }, [transcriptMessage, transcript, videoId])
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <p style={{ margin: 'auto' }}>
-        {infos.doneCount + (state?.done && state.correct ? 1 : 0)}/
-        <b>{infos.totalLength}</b>
+        {infos.doneCount}/<b>{infos.totalLength}</b>
       </p>
     </div>
   )

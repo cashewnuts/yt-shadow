@@ -26,9 +26,11 @@ export interface RequestMessageServiceBase {
   getDict(word: string): Promise<OwlbotResponse>
 }
 
-export default class RequestMessageService
-  implements RequestMessageServiceBase {
-  constructor(private port: browser.runtime.Port) {
+export class RequestMessageService implements RequestMessageServiceBase {
+  port?: browser.runtime.Port
+
+  init(port: browser.runtime.Port) {
+    this.port = port
     this.port.onDisconnect.addListener((port: browser.runtime.Port) => {
       logger.info('RequestMessageService: disconnected', port)
     })
@@ -61,10 +63,14 @@ export default class RequestMessageService
   }
 
   private postMessage<T extends RequestContentAction, R>(action: T) {
+    if (!this.port) {
+      throw new Error('port not be set')
+    }
     return new Promise<R>((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/ban-types
       const listener = (obj: object) => {
         if (instanceOfRequestContentAction(obj) && obj.url === action.url) {
-          this.port.onMessage.removeListener(listener)
+          this.port?.onMessage.removeListener(listener)
           if (obj.error) {
             reject(obj.error)
           } else {
@@ -76,18 +82,22 @@ export default class RequestMessageService
         reject.bind(this, 'postMessage timeout: ' + JSON.stringify(action)),
         10000
       )
-      this.port.onMessage.addListener(listener)
-      this.port.postMessage<T>(action)
+      this.port?.onMessage.addListener(listener)
+      this.port?.postMessage<T>(action)
     })
   }
   private postMessageDict<T extends RequestDictionaryAction, R>(action: T) {
+    if (!this.port) {
+      throw new Error('port not be set')
+    }
     return new Promise<R>((resolve, reject) => {
+      // eslint-disable-next-line @typescript-eslint/ban-types
       const listener = (obj: object) => {
         if (
           instanceOfRequestDictionaryAction(obj) &&
           obj.word === action.word
         ) {
-          this.port.onMessage.removeListener(listener)
+          this.port?.onMessage.removeListener(listener)
           if (obj.error) {
             reject(obj.error)
           } else {
@@ -99,8 +109,10 @@ export default class RequestMessageService
         reject.bind(this, 'postMessage timeout: ' + JSON.stringify(action)),
         10000
       )
-      this.port.onMessage.addListener(listener)
-      this.port.postMessage<T>(action)
+      this.port?.onMessage.addListener(listener)
+      this.port?.postMessage<T>(action)
     })
   }
 }
+
+export default new RequestMessageService()

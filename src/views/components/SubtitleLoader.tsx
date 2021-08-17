@@ -49,15 +49,14 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
   const [loading, setLoading] = useState(true)
   const [subtitleNotExists, setSubtitleNotExists] = useState(false)
   const { videoId, onSRTLoaded, onError } = props
-  const { transcriptMessage, videoMessage, requestMessage } = useContext(
-    MessageContext
-  )
+  const messangers = useContext(MessageContext)
 
   useEffect(() => {
     const asyncFn = async () => {
-      if (!videoId) {
+      if (!videoId || !messangers) {
         return
       }
+      const { transcriptMessage, videoMessage, requestMessage } = messangers
       setSubtitleNotExists(false)
       setLoading(true)
       try {
@@ -103,7 +102,7 @@ const SubtitleLoader = (props: PropsWithChildren<SubtitleLoaderProps>) => {
     }
     asyncFn()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId])
+  }, [videoId, messangers])
 
   return (
     <>

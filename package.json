@@ -72,6 +72,7 @@
     "@blueprintjs/core": "^3.47.0",
     "@emotion/core": "^11.0.0",
     "@emotion/react": "^11.4.1",
+    "@reduxjs/toolkit": "^1.6.1",
     "@types/crypto-js": "^4.0.2",
     "@types/uuid": "^8.3.1",
     "browser-xml2js": "^0.4.19",
@@ -83,6 +84,7 @@
     "react": "^17.0.2",
     "react-app-polyfill": "^2.0.0",
     "react-dom": "^17.0.2",
+    "react-redux": "^7.2.4",
     "uuid": "^8.3.2"
   }
 }

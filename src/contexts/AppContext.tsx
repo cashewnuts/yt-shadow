@@ -9,6 +9,8 @@ import React, {
 import { createLogger } from '@/helpers/logger'
 import { MessageContextProvider } from './MessageContext'
 import { ShortcutContextProvider } from './ShortcutContext'
+import { store } from '../views/store'
+import { Provider } from 'react-redux'
 const MemoinizedMessageContextProvider = memo(MessageContextProvider)
 const MemoinizedShortcutContextProvider = memo(ShortcutContextProvider)
 const logger = createLogger('AppContext.tsx')
@@ -31,11 +33,13 @@ export const AppContextProvider = (props: PropsWithChildren<unknown>) => {
   }
   return (
     <AppContext.Provider value={value}>
-      <MemoinizedMessageContextProvider>
-        <MemoinizedShortcutContextProvider>
-          {props.children}
-        </MemoinizedShortcutContextProvider>
-      </MemoinizedMessageContextProvider>
+      <Provider store={store}>
+        <MemoinizedMessageContextProvider>
+          <MemoinizedShortcutContextProvider>
+            {props.children}
+          </MemoinizedShortcutContextProvider>
+        </MemoinizedMessageContextProvider>
+      </Provider>
     </AppContext.Provider>
   )
 }
