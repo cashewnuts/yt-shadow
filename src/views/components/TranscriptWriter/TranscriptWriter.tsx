@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /** @jsx jsx */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import React, {
+import {
   ChangeEvent,
   useState,
   KeyboardEvent,
@@ -30,8 +30,11 @@ import { MessageContext } from '@/contexts/MessageContext'
 import { WordProcessor } from './WordProcessor'
 import { ShortcutContext, ShortcutKey } from '@/contexts/ShortcutContext'
 import { AppDispatch, RootState } from '@/views/store'
-import { AppStateSlice, AppStateState } from '@/views/store/slicers/app-state'
-import { TranscriptSlice } from '@/views/store/slicers/transcript'
+import { AppStateSlice } from '@/views/store/slicers/app-state'
+import {
+  patchTranscript,
+  TranscriptSlice,
+} from '@/views/store/slicers/transcript'
 import { connect, ConnectedProps } from 'react-redux'
 const logger = createLogger('TranscriptWriter.tsx')
 
@@ -47,14 +50,10 @@ export interface TranscriptWriterProps {
   inputRef: MutableRefObject<HTMLInputElement | null>
   video?: HTMLVideoElement
   srt?: SRT
-  onLoad?: (text: SRTMeasure, value: onInputType) => void
-  onPlay?: () => void
-  onPause?: () => void
   onRepeat?: () => void
   onRangeOpen?: () => void
   onFocus?: (focus: boolean) => void
   onInput?: (text: SRTMeasure, value: onInputType) => void
-  onSkip?: (skip: boolean) => void
   onAutoStop?: () => void
   onHelp?: () => void
   onEscape?: () => void
@@ -63,15 +62,37 @@ export interface TranscriptWriterProps {
 const mapState = (state: RootState) => ({
   autoStop: state.appState.autoStop,
   appState: state.appState,
+  transcript: state.transcript.data,
 })
+const mapDispatch = (
+  dispatch: AppDispatch,
+  _ownProps: TranscriptWriterProps
+) => {
+  return {
+    dispatch,
+    onLoad: (text: SRTMeasure, value: onInputType) =>
+      dispatch(
+        TranscriptSlice.actions.update({
+          data: text,
+          state: {
+            done: value.done,
+            correct: value.correct,
+            skip: value.skip || false,
+          },
+        })
+      ),
+  }
+}
 
 const mergeProps = (
   mapProps: ReturnType<typeof mapState>,
-  dispatchProps: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dispatchProps: ReturnType<typeof mapDispatch>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ownProps: TranscriptWriterProps
 ) => {
-  const { video, srt } = ownProps
-  const { appState } = mapProps
+  const { videoId, video, srt } = ownProps
+  const { appState, transcript } = mapProps
   const { dispatch } = dispatchProps
   const nextPrevHandler = (crement: 1 | -1) => {
     if (!video || !srt) return
@@ -94,15 +115,66 @@ const mergeProps = (
       video.currentTime = matchedParagraph.start
     }
   }
+  const handlePlayPause = (bool: boolean) => {
+    if (!video || !srt) return
+    const prop = srt[appState.srtGrainSize]
+    const currentTime = video.currentTime
+    const matchedScript = (prop as Array<SRTMeasure>).find(
+      (t) => t.start <= currentTime && currentTime < t.start + t.dur
+    )
+    if (!matchedScript) return
+    logger.debug('matchedScript', matchedScript)
+    dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
+    if (matchedScript !== transcript) {
+      dispatch(AppStateSlice.actions.setWaitMillisec(500))
+    } else {
+      dispatch(AppStateSlice.actions.resetWaitState(100))
+    }
+    if (bool) {
+      video?.play()
+    } else {
+      video?.pause()
+    }
+  }
+  const handleSkip = async (skip: boolean) => {
+    logger.debug('skip', skip)
+    if (!transcript || !videoId) return
+    const patchData = {
+      host: window.location.host,
+      videoId,
+      start: transcript.start,
+      skip,
+    }
+    try {
+      await dispatch(
+        patchTranscript({
+          message: patchData,
+          state: {
+            skip,
+          },
+        })
+      ).unwrap()
+      dispatch(TranscriptSlice.actions.setSkip(skip))
+      logger.info('dbMessageService.patch for skip', {
+        patchData,
+      })
+    } catch (err) {
+      logger.error('dbMessageService.patch for skip', err)
+    }
+  }
   return {
     ...ownProps,
     ...mapProps,
+    ...dispatchProps,
     onNext: () => nextPrevHandler(1),
     onPrevious: () => nextPrevHandler(-1),
+    onPlay: () => handlePlayPause(true),
+    onPause: () => handlePlayPause(false),
+    onSkip: (skip: boolean) => handleSkip(skip),
   }
 }
 
-const connector = connect(mapState, null, mergeProps)
+const connector = connect(mapState, mapDispatch, mergeProps)
 
 type PropsFromRedux = ConnectedProps<typeof connector>
 

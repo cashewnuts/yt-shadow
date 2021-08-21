@@ -7,7 +7,7 @@ import React, {
 import { MessageContext } from '@/contexts/MessageContext'
 import { createLogger } from '@/helpers/logger'
 import { useAppSelector } from '../store/hooks'
-import { selectTranscript } from '../store/selectors'
+import { selectTranscript, selectTranscriptState } from '../store/selectors'
 const logger = createLogger('TranscriptDetails.tsx')
 
 export interface TranscriptDetailsProps {
@@ -19,6 +19,7 @@ const TranscriptDetails = (
 ) => {
   const { transcriptMessage } = useContext(MessageContext)
   const transcript = useAppSelector(selectTranscript)
+  const { skip } = useAppSelector(selectTranscriptState)
   const { videoId } = props
   const [infos, setInfos] = useState({
     doneCount: 0,
@@ -45,7 +46,7 @@ const TranscriptDetails = (
       })
     }
     asyncFn()
-  }, [transcriptMessage, transcript, videoId])
+  }, [transcriptMessage, transcript, videoId, skip])
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <p style={{ margin: 'auto' }}>
