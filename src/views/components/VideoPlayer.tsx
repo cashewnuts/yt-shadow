@@ -17,46 +17,11 @@ const mapState = (state: RootState) => ({
   transcript: state.transcript.data,
   appState: state.appState,
 })
-const mapDispatch = (
-  dispatch: AppDispatch,
-  {
-    transcript,
-    video,
-    appState,
-    srt,
-  }: ReturnType<typeof mapState> & VideoPlayerProps
-) => {
+const mapDispatch = (dispatch: AppDispatch) => {
   return {
     dispatch,
-    onToggle: () => {
-      if (!video || !srt) return
-      const prop = srt[appState.srtGrainSize]
-      const currentTime = video.currentTime
-      const matchedScript = (prop as Array<SRTMeasure>).find(
-        (t) => t.start <= currentTime && currentTime < t.start + t.dur
-      )
-      if (!matchedScript) return
-      dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
-      if (matchedScript !== transcript) {
-        dispatch(AppStateSlice.actions.setWaitMillisec(500))
-      } else {
-        dispatch(AppStateSlice.actions.resetWaitState(100))
-      }
-      if (video.paused) {
-        video.play()
-      } else {
-        video.pause()
-      }
-    },
     onRangeOpen: () => {
       dispatch(AppStateSlice.actions.toggleRangeOpen())
-    },
-    onRepeat: () => {
-      if (transcript && video) {
-        dispatch(AppStateSlice.actions.resetWaitState())
-        video.currentTime = transcript.start
-        video.play()
-      }
     },
     onAutoStopToggle: () => dispatch(AppStateSlice.actions.toggleAutoStop()),
     onHelp: () => dispatch(AppStateSlice.actions.toggleHelpOpen()),
@@ -69,7 +34,7 @@ const mergeProps = (
   ownProps: VideoPlayerProps
 ) => {
   const { video, srt } = ownProps
-  const { appState } = mapProps
+  const { appState, transcript } = mapProps
   const { dispatch } = dispatchProps
   const nextPrevHandler = (crement: 1 | -1) => {
     if (!video || !srt) return
@@ -95,8 +60,36 @@ const mergeProps = (
   return {
     ...ownProps,
     ...mapProps,
+    ...dispatchProps,
     onNext: () => nextPrevHandler(1),
     onPrevious: () => nextPrevHandler(-1),
+    onToggle: () => {
+      if (!video || !srt) return
+      const prop = srt[appState.srtGrainSize]
+      const currentTime = video.currentTime
+      const matchedScript = (prop as Array<SRTMeasure>).find(
+        (t) => t.start <= currentTime && currentTime < t.start + t.dur
+      )
+      if (!matchedScript) return
+      dispatch(TranscriptSlice.actions.updateTranscript(matchedScript))
+      if (matchedScript !== transcript) {
+        dispatch(AppStateSlice.actions.setWaitMillisec(500))
+      } else {
+        dispatch(AppStateSlice.actions.resetWaitState(100))
+      }
+      if (video.paused) {
+        video.play()
+      } else {
+        video.pause()
+      }
+    },
+    onRepeat: () => {
+      if (transcript && video) {
+        dispatch(AppStateSlice.actions.resetWaitState())
+        video.currentTime = transcript.start
+        video.play()
+      }
+    },
   }
 }
 
@@ -135,7 +128,7 @@ export const VideoPlayer = (props: Props) => {
   }, [video])
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} onClick={(event) => event.stopPropagation()}>
       <div style={styles.playerWrapper}>
         <div style={styles.alignHorizontal}>
           <Tooltip2 content={<span>help</span>}>
